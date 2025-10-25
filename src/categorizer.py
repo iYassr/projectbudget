@@ -12,13 +12,15 @@ from dotenv import load_dotenv
 class ExpenseCategorizer:
     """Categorize expenses using AI and rule-based approaches"""
 
-    def __init__(self, config_path: str = "config/categories.json", use_ai: bool = True):
+    def __init__(self, config_path: str = "config/categories.json", use_ai: bool = True,
+                 cache_path: str = "merchant_cache.json"):
         """
         Initialize categorizer
 
         Args:
             config_path: Path to categories configuration file
             use_ai: Whether to use AI for categorization (requires API key)
+            cache_path: Path to merchant cache file (to avoid repeated AI calls)
         """
         # Load categories configuration
         with open(config_path, 'r') as f:
@@ -27,6 +29,17 @@ class ExpenseCategorizer:
         self.categories = config['categories']
         self.merchant_keywords = config['merchant_keywords']
         self.use_ai = use_ai
+        self.cache_path = cache_path
+
+        # Load merchant cache
+        self.merchant_cache = {}
+        if os.path.exists(cache_path):
+            try:
+                with open(cache_path, 'r') as f:
+                    cache_data = json.load(f)
+                    self.merchant_cache = cache_data.get('merchants', {})
+            except:
+                self.merchant_cache = {}
 
         # Initialize Anthropic client if using AI
         self.client = None
@@ -58,12 +71,23 @@ class ExpenseCategorizer:
         Returns:
             Dictionary with category and confidence score
         """
+        # Normalize merchant name for cache lookup
+        merchant_key = merchant.upper().strip()
+
         # First check if we have a learned category
         if learned_category:
             return {
                 'category': learned_category,
                 'confidence': 1.0,
                 'method': 'learned'
+            }
+
+        # Check merchant cache (from previous AI categorizations)
+        if merchant_key in self.merchant_cache:
+            return {
+                'category': self.merchant_cache[merchant_key],
+                'confidence': 0.95,
+                'method': 'cached'
             }
 
         # Try rule-based categorization
@@ -79,6 +103,10 @@ class ExpenseCategorizer:
         if self.use_ai and self.client:
             ai_category = self._categorize_by_ai(merchant, amount, raw_message)
             if ai_category:
+                # Cache this result for future use
+                self.merchant_cache[merchant_key] = ai_category
+                self._save_cache()
+
                 return {
                     'category': ai_category,
                     'confidence': 0.9,
@@ -150,6 +178,18 @@ class ExpenseCategorizer:
                     return category
 
         return None
+
+    def _save_cache(self):
+        """Save merchant cache to file"""
+        try:
+            cache_data = {
+                'comment': 'This file caches merchant categorizations to avoid repeated AI calls',
+                'merchants': self.merchant_cache
+            }
+            with open(self.cache_path, 'w') as f:
+                json.dump(cache_data, f, indent=2)
+        except Exception as e:
+            print(f"Warning: Could not save merchant cache: {e}")
 
     def _categorize_by_ai(
         self,

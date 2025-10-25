@@ -225,6 +225,9 @@ else:
     print(f"  📋 Using rule-based categorization")
 categorizer = ExpenseCategorizer(use_ai=USE_AI_CATEGORIZATION)
 
+# Track categorization methods
+method_counts = {'cached': 0, 'rules': 0, 'ai': 0, 'default': 0}
+
 for exp in expenses:
     result = categorizer.categorize_expense(
         merchant=exp['merchant'],
@@ -232,8 +235,16 @@ for exp in expenses:
         raw_message=exp.get('raw_message', '')
     )
     exp['category'] = result['category']
+    method = result.get('method', 'default')
+    method_counts[method] = method_counts.get(method, 0) + 1
 
 print(f"  ✓ Categorized {len(expenses):,} expenses")
+if USE_AI_CATEGORIZATION:
+    print(f"    • Cached: {method_counts['cached']:,} (FREE)")
+    print(f"    • Rules: {method_counts['rules']:,} (FREE)")
+    print(f"    • AI: {method_counts['ai']:,} (${method_counts['ai'] * 0.001:.3f})")
+    if method_counts['default'] > 0:
+        print(f"    • Unknown: {method_counts['default']:,}")
 
 # Save to database
 print(f"\n[5/5] Saving to database...")

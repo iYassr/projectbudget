@@ -1,0 +1,4 @@
+{
+  "comment": "This file caches merchant categorizations to avoid repeated AI calls",
+  "merchants": {}
+}
