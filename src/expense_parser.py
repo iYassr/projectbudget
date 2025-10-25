@@ -16,9 +16,9 @@ class ExpenseParser:
 
     # Regex patterns for different message formats
     PATTERNS = [
-        # Arabic Pattern: "شراء بطاقة:9206 مبلغ:SAR 114.38 لدى:SASCO"
+        # Arabic Pattern: "شراء بطاقة:9206 مبلغ:SAR 114.38 لدى:SASCO" or "شراء إنترنت ... لدى:Amazon"
         {
-            'pattern': r'شراء.*?مبلغ:?\s*(?:SAR|SR|ريال)?\s*([\d,]+\.?\d*)\s*(?:لدى|لدي):?\s*(.+?)(?:\s+في|\n|$)',
+            'pattern': r'شراء[\s\S]*?مبلغ:?\s*([\d,]+\.?\d*)\s*(?:SAR|SR|ريال)?[\s\S]*?(?:لدى|لدي):?\s*([^\n\r]+?)(?:\s+رصيد|\s+في|\n|$)',
             'amount_group': 1,
             'merchant_group': 2
         },
