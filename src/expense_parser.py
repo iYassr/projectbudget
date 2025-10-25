@@ -14,11 +14,37 @@ class ExpenseParser:
     # Common currency symbols
     CURRENCY_SYMBOLS = ['$', '₹', '€', '£', '¥']
 
+    # Keywords that indicate incoming money (should NOT be treated as expenses)
+    INCOMING_KEYWORDS = [
+        'واردة',      # Incoming (Arabic)
+        'وارد',       # Incoming (Arabic)
+        'إيداع',      # Deposit
+        'ايداع',      # Deposit (alternative spelling)
+        'credited',   # Credited
+        'deposit',    # Deposit
+        'received',   # Received
+        'refund',     # Refund
+        'استرداد',    # Refund (Arabic)
+    ]
+
+    # Keywords that indicate OTP/verification messages (should be excluded)
+    OTP_KEYWORDS = [
+        'otp',
+        'verification code',
+        'رمز التحقق',    # Verification code (Arabic)
+        'كود التحقق',    # Verification code (Arabic)
+        'verify',
+        'تحقق',          # Verify (Arabic)
+        'one time password',
+        'do not share',
+        'لا تشارك',      # Do not share (Arabic)
+    ]
+
     # Regex patterns for different message formats
     PATTERNS = [
         # Arabic Pattern: "شراء بطاقة:9206 مبلغ:SAR 114.38 لدى:SASCO" or "شراء إنترنت ... لدى:Amazon"
         {
-            'pattern': r'شراء[\s\S]*?مبلغ:?\s*([\d,]+\.?\d*)\s*(?:SAR|SR|ريال)?[\s\S]*?(?:لدى|لدي):?\s*([^\n\r]+?)(?:\s+رصيد|\s+في|\n|$)',
+            'pattern': r'شراء[\s\S]*?مبلغ:?\s*(?:SAR|SR|ريال)?\s*([\d,]+\.?\d*)\s*(?:SAR|SR|ريال)?[\s\S]*?(?:لدى|لدي):?\s*([^\n\r]+?)(?:\s+رصيد|\s+في|\n|$)',
             'amount_group': 1,
             'merchant_group': 2
         },
@@ -107,6 +133,14 @@ class ExpenseParser:
 
         message = message.strip()
 
+        # Check if message is an OTP/verification code (exclude these)
+        message_lower = message.lower()
+        if any(keyword.lower() in message_lower for keyword in self.OTP_KEYWORDS):
+            return None
+
+        # Check if message is incoming money (exclude these from expenses)
+        is_incoming = any(keyword in message for keyword in self.INCOMING_KEYWORDS)
+
         # Try each pattern
         for pattern_info in self.PATTERNS:
             match = re.search(pattern_info['pattern'], message, re.IGNORECASE | re.DOTALL)
@@ -118,6 +152,10 @@ class ExpenseParser:
 
                 if amount is None or amount <= 0:
                     continue
+
+                # If this is incoming money, skip it (not an expense)
+                if is_incoming:
+                    return None
 
                 # Extract merchant
                 merchant = None
