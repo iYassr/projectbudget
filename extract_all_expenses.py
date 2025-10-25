@@ -88,18 +88,24 @@ if not expenses:
 print("\n[3/4] Categorizing expenses...")
 try:
     for exp in expenses:
-        category, confidence, method = categorizer.categorize(
-            exp['merchant'],
-            exp.get('description', '')
+        result = categorizer.categorize_expense(
+            merchant=exp['merchant'],
+            amount=exp['amount'],
+            raw_message=exp.get('raw_message', '')
         )
-        exp['category'] = category
-        exp['category_confidence'] = confidence
-        exp['category_method'] = method
+        exp['category'] = result['category']
+        exp['category_confidence'] = result.get('confidence', 0.5)
+        exp['category_method'] = result.get('method', 'rule-based')
 
     print(f"  ✓ Categorized {len(expenses)} expenses")
 except Exception as e:
     print(f"  ✗ Error categorizing: {e}")
-    # Continue anyway
+    import traceback
+    traceback.print_exc()
+    # Continue anyway with default category
+    for exp in expenses:
+        if 'category' not in exp:
+            exp['category'] = 'Uncategorized'
 
 # Step 4: Save to database
 print("\n[4/4] Saving to database...")
@@ -114,14 +120,18 @@ try:
         else:
             date_obj = exp['date']
 
-        db.add_expense(
-            date=date_obj,
-            amount=exp['amount'],
-            merchant=exp['merchant'],
-            category=exp.get('category', 'Uncategorized'),
-            raw_message=exp['raw_message'],
-            payment_method=exp.get('payment_method', 'Unknown')
-        )
+        # Create expense dict for database
+        expense_dict = {
+            'date': date_obj.strftime('%Y-%m-%d %H:%M:%S') if isinstance(date_obj, datetime) else str(date_obj),
+            'amount': exp['amount'],
+            'merchant': exp['merchant'],
+            'category': exp.get('category', 'Uncategorized'),
+            'sender': exp.get('sender', ''),
+            'raw_message': exp['raw_message'],
+            'notes': ''
+        }
+
+        db.add_expense(expense_dict)
         saved_count += 1
 
     print(f"  ✓ Saved {saved_count} expenses to database")
