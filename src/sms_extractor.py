@@ -13,13 +13,36 @@ import argparse
 class SMSExtractor:
     """Extract SMS messages from iPhone Messages database on Mac"""
 
-    # Common bank and payment service identifiers
+    # Common bank and payment service identifiers (English & Arabic)
     FINANCIAL_SENDERS = [
+        # English keywords
         'bank', 'card', 'credit', 'debit', 'payment', 'transaction',
         'paypal', 'venmo', 'zelle', 'cashapp', 'apple pay',
         'visa', 'mastercard', 'amex', 'discover',
         'chase', 'bofa', 'wells fargo', 'citi', 'capital one',
-        'spent', 'purchased', 'paid', 'withdrawn', 'debited'
+        'spent', 'purchased', 'paid', 'withdrawn', 'debited',
+        'purchase', 'amount', 'balance', 'account',
+        # Arabic keywords (Saudi banks)
+        'شراء',      # Purchase
+        'مبلغ',      # Amount
+        'بطاقة',     # Card
+        'حوالة',     # Transfer
+        'رصيد',      # Balance
+        'سحب',       # Withdrawal
+        'ايداع',     # Deposit
+        'مدى',       # Mada (Saudi debit card)
+        'فيزا',      # Visa
+        'ماستر',     # Master
+        'ابل باي',   # Apple Pay
+        'SAR',       # Saudi Riyal
+        'ريال',      # Riyal
+        'SR',        # Saudi Riyal abbreviation
+        # Common Saudi bank abbreviations
+        'SAIB',      # Saudi Investment Bank
+        'RJHI',      # Al Rajhi Bank
+        'NCB',       # National Commercial Bank
+        'SABB',      # SABB Bank
+        'SNB',       # Saudi National Bank
     ]
 
     def __init__(self, db_path: Optional[str] = None):

@@ -16,46 +16,65 @@ class ExpenseParser:
 
     # Regex patterns for different message formats
     PATTERNS = [
+        # Arabic Pattern: "شراء بطاقة:9206 مبلغ:SAR 114.38 لدى:SASCO"
+        {
+            'pattern': r'شراء.*?مبلغ:?\s*(?:SAR|SR|ريال)?\s*([\d,]+\.?\d*)\s*(?:لدى|لدي):?\s*(.+?)(?:\s+في|\n|$)',
+            'amount_group': 1,
+            'merchant_group': 2
+        },
+        # Arabic Pattern: "حوالة ... مبلغ:SAR 10000 الى:Name"
+        {
+            'pattern': r'حوالة.*?(?:مبلغ|المبلغ):?\s*(?:SAR|SR|ريال)?\s*([\d,]+\.?\d*)',
+            'amount_group': 1,
+            'merchant_group': None,
+            'default_merchant': 'Transfer'
+        },
+        # English/Arabic Mixed: "Amount:139.40 SAR ... At:Keeta"
+        {
+            'pattern': r'(?:Amount|مبلغ):?\s*(?:SAR|SR|ريال)?\s*([\d,]+\.?\d*)\s*(?:SAR|SR|ريال)?.*?(?:At|لدى|لدي):?\s*(.+?)(?:\s+A/C|\n|$)',
+            'amount_group': 1,
+            'merchant_group': 2
+        },
         # Pattern: "spent $50.00 at Starbucks"
         {
-            'pattern': r'(?:spent|paid|debited|charged)\s*(?:rs\.?|inr|usd)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:at|on|to|for)?\s*(.+?)(?:\s+on|\.|$)',
+            'pattern': r'(?:spent|paid|debited|charged)\s*(?:rs\.?|inr|usd|sar|sr)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:at|on|to|for)?\s*(.+?)(?:\s+on|\.|$)',
             'amount_group': 1,
             'merchant_group': 2
         },
         # Pattern: "Rs 150.00 debited from account for AMAZON"
         {
-            'pattern': r'(?:rs\.?|inr|usd)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:debited|withdrawn|paid|spent).*?(?:for|at|to)\s*(.+?)(?:\s+on|\.|$)',
+            'pattern': r'(?:rs\.?|inr|usd|sar|sr)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:debited|withdrawn|paid|spent).*?(?:for|at|to)\s*(.+?)(?:\s+on|\.|$)',
             'amount_group': 1,
             'merchant_group': 2
         },
         # Pattern: "Your card ending 1234 has been used for Rs 500 at McDonald's"
         {
-            'pattern': r'card.*?(?:used|charged|debited).*?(?:for|of)\s*(?:rs\.?|inr|usd)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:at|on|to|for)\s*(.+?)(?:\s+on|\.|$)',
+            'pattern': r'card.*?(?:used|charged|debited).*?(?:for|of)\s*(?:rs\.?|inr|usd|sar|sr)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:at|on|to|for)\s*(.+?)(?:\s+on|\.|$)',
             'amount_group': 1,
             'merchant_group': 2
         },
         # Pattern: "Transaction of $25.50 at Uber"
         {
-            'pattern': r'transaction.*?(?:of|for)\s*(?:rs\.?|inr|usd)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:at|on|to|for)?\s*(.+?)(?:\s+on|\.|$)',
+            'pattern': r'transaction.*?(?:of|for)\s*(?:rs\.?|inr|usd|sar|sr)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:at|on|to|for)?\s*(.+?)(?:\s+on|\.|$)',
             'amount_group': 1,
             'merchant_group': 2
         },
         # Pattern: "Purchase of Rs.1,200.00 at SWIGGY"
         {
-            'pattern': r'purchase.*?(?:of|for)\s*(?:rs\.?|inr|usd)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:at|on|to|for)?\s*(.+?)(?:\s+on|\.|$)',
+            'pattern': r'purchase.*?(?:of|for)\s*(?:rs\.?|inr|usd|sar|sr)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*(?:at|on|to|for)?\s*(.+?)(?:\s+on|\.|$)',
             'amount_group': 1,
             'merchant_group': 2
         },
         # Pattern: "ATM withdrawal Rs 2000"
         {
-            'pattern': r'(?:atm|cash).*?(?:withdrawal|withdrawn)\s*(?:of)?\s*(?:rs\.?|inr|usd)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)',
+            'pattern': r'(?:atm|cash).*?(?:withdrawal|withdrawn)\s*(?:of)?\s*(?:rs\.?|inr|usd|sar|sr)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)',
             'amount_group': 1,
             'merchant_group': None,
             'default_merchant': 'ATM Withdrawal'
         },
         # Pattern: "Sent Rs 500 to John via PayTM"
         {
-            'pattern': r'(?:sent|transferred)\s*(?:rs\.?|inr|usd)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*to\s*(.+?)\s*via',
+            'pattern': r'(?:sent|transferred)\s*(?:rs\.?|inr|usd|sar|sr)?\s*[\$₹€£¥]?\s*([\d,]+\.?\d*)\s*to\s*(.+?)\s*via',
             'amount_group': 1,
             'merchant_group': 2,
             'is_transfer': True
