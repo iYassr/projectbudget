@@ -16,7 +16,8 @@ from categorizer import ExpenseCategorizer
 # Import configuration
 try:
     from config import (ALLOWED_SENDERS, ENABLE_SENDER_FILTER, DEBUG_SENDER_FILTER,
-                        MY_ACCOUNTS, ENABLE_TRANSFER_FILTER, DEBUG_TRANSFER_FILTER)
+                        MY_ACCOUNTS, ENABLE_TRANSFER_FILTER, DEBUG_TRANSFER_FILTER,
+                        USE_AI_CATEGORIZATION)
 except ImportError:
     # Default behavior if config.py doesn't exist
     ALLOWED_SENDERS = []
@@ -25,6 +26,7 @@ except ImportError:
     MY_ACCOUNTS = []
     ENABLE_TRANSFER_FILTER = False
     DEBUG_TRANSFER_FILTER = False
+    USE_AI_CATEGORIZATION = False
 
 # Path to TXT export folder
 EXPORT_PATH = os.path.expanduser("~/messages_export")
@@ -217,7 +219,11 @@ if not expenses:
 
 # Categorize
 print(f"\n[4/5] Categorizing...")
-categorizer = ExpenseCategorizer(use_ai=False)
+if USE_AI_CATEGORIZATION:
+    print(f"  🤖 Using AI-powered categorization (Claude)")
+else:
+    print(f"  📋 Using rule-based categorization")
+categorizer = ExpenseCategorizer(use_ai=USE_AI_CATEGORIZATION)
 
 for exp in expenses:
     result = categorizer.categorize_expense(

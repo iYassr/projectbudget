@@ -20,7 +20,7 @@ print("=" * 80)
 extractor = SMSExtractor()
 parser = ExpenseParser()
 db = ExpenseDatabase('data/expenses.db')
-categorizer = ExpenseCategorizer(use_ai=False)  # Disable AI for testing
+categorizer = ExpenseCategorizer(use_ai=True  # Enable AI categorization)  # Disable AI for testing
 
 # Step 1: Extract messages (NO DATE FILTER)
 print("\n[1/4] Extracting ALL SMS messages...")

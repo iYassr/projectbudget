@@ -84,3 +84,16 @@ ENABLE_TRANSFER_FILTER = False
 
 # Set to True to see which transfers are being filtered
 DEBUG_TRANSFER_FILTER = False
+
+
+# =============================================================================
+# AI CATEGORIZATION
+# =============================================================================
+# Use AI (Claude) to categorize expenses intelligently
+# - True: Uses Claude API for smart categorization (requires ANTHROPIC_API_KEY)
+# - False: Uses simple rule-based categorization (less accurate)
+#
+# Make sure you have ANTHROPIC_API_KEY in your .env file
+# =============================================================================
+
+USE_AI_CATEGORIZATION = True

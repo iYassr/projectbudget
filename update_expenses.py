@@ -20,7 +20,7 @@ print("=" * 80)
 extractor = SMSExtractor()
 parser = ExpenseParser()
 db = ExpenseDatabase('data/expenses.db')
-categorizer = ExpenseCategorizer(use_ai=False)
+categorizer = ExpenseCategorizer(use_ai=True  # Enable AI categorization)
 
 # Get existing expenses to check for duplicates
 print("\n[1/5] Checking existing expenses...")
