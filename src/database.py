@@ -40,6 +40,7 @@ class ExpenseDatabase:
                 merchant TEXT NOT NULL,
                 category TEXT,
                 transaction_type TEXT DEFAULT 'expense',
+                currency TEXT DEFAULT 'SAR',
                 sender TEXT,
                 raw_message TEXT,
                 notes TEXT,
@@ -99,14 +100,15 @@ class ExpenseDatabase:
         cursor = conn.cursor()
 
         cursor.execute("""
-            INSERT INTO expenses (date, amount, merchant, category, transaction_type, sender, raw_message, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO expenses (date, amount, merchant, category, transaction_type, currency, sender, raw_message, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             expense['date'],
             expense['amount'],
             expense['merchant'],
             expense.get('category'),
             expense.get('transaction_type', 'expense'),
+            expense.get('currency', 'SAR'),
             expense.get('sender'),
             expense.get('raw_message'),
             expense.get('notes', '')

@@ -131,10 +131,14 @@ class ExpenseParser:
                 # Determine transaction type
                 trans_type = 'transfer' if pattern_info.get('is_transfer', False) else 'expense'
 
+                # Detect currency from message
+                currency = self._detect_currency(message)
+
                 return {
                     'amount': amount,
                     'merchant': merchant or 'Unknown',
                     'transaction_type': trans_type,
+                    'currency': currency,
                     'raw_message': message,
                     'matched_pattern': pattern_info['pattern']
                 }
@@ -196,6 +200,37 @@ class ExpenseParser:
             return amount if amount > 0 else None
         except (ValueError, AttributeError):
             return None
+
+    def _detect_currency(self, message: str) -> str:
+        """
+        Detect currency from message text
+
+        Args:
+            message: SMS message text
+
+        Returns:
+            Currency code (SAR, USD, etc.)
+        """
+        message_upper = message.upper()
+
+        # Check for SAR indicators
+        if 'SAR' in message_upper or 'ريال' in message or 'SR' in message_upper:
+            return 'SAR'
+
+        # Check for USD indicators
+        if '$' in message or 'USD' in message_upper or 'DOLLAR' in message_upper:
+            return 'USD'
+
+        # Check for other currencies
+        if '€' in message or 'EUR' in message_upper:
+            return 'EUR'
+        if '£' in message or 'GBP' in message_upper:
+            return 'GBP'
+        if '₹' in message or 'INR' in message_upper or 'RS.' in message_upper or 'RS ' in message_upper:
+            return 'INR'
+
+        # Default to SAR for Saudi bank messages
+        return 'SAR'
 
     def _clean_merchant_name(self, merchant: str) -> str:
         """

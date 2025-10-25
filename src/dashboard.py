@@ -11,6 +11,28 @@ from analyzer import ExpenseAnalyzer
 import calendar
 
 
+# Currency symbol mapping
+CURRENCY_SYMBOLS = {
+    'SAR': 'SAR',
+    'USD': '$',
+    'EUR': '€',
+    'GBP': '£',
+    'INR': '₹'
+}
+
+
+def format_amount(row):
+    """Format amount with appropriate currency symbol"""
+    amount = row['amount']
+    currency = row.get('currency', 'SAR')
+    symbol = CURRENCY_SYMBOLS.get(currency, currency)
+
+    if currency == 'SAR':
+        return f"{symbol} {amount:,.2f}"
+    else:
+        return f"{symbol}{amount:,.2f}"
+
+
 # Page configuration
 st.set_page_config(
     page_title="Expense Tracker Dashboard",
@@ -91,8 +113,29 @@ def main():
     col1, col2, col3, col4 = st.columns(4)
 
     with col1:
-        total_spent = df['amount'].sum()
-        st.metric("Total Spent", f"${total_spent:,.2f}")
+        # Group by currency for total spent
+        if 'currency' in df.columns:
+            currency_totals = df.groupby('currency')['amount'].sum()
+            if len(currency_totals) == 1:
+                currency = currency_totals.index[0]
+                symbol = CURRENCY_SYMBOLS.get(currency, currency)
+                total_spent = currency_totals.values[0]
+                if currency == 'SAR':
+                    st.metric("Total Spent", f"{symbol} {total_spent:,.2f}")
+                else:
+                    st.metric("Total Spent", f"{symbol}{total_spent:,.2f}")
+            else:
+                # Multiple currencies - show all
+                st.metric("Total Spent", "Mixed")
+                for currency, total in currency_totals.items():
+                    symbol = CURRENCY_SYMBOLS.get(currency, currency)
+                    if currency == 'SAR':
+                        st.caption(f"{symbol} {total:,.2f}")
+                    else:
+                        st.caption(f"{symbol}{total:,.2f}")
+        else:
+            total_spent = df['amount'].sum()
+            st.metric("Total Spent", f"${total_spent:,.2f}")
 
     with col2:
         transaction_count = len(df)
@@ -104,7 +147,8 @@ def main():
 
     with col4:
         days = (end_date - start_date).days + 1
-        avg_per_day = total_spent / days if days > 0 else 0
+        total_spent_num = df['amount'].sum()
+        avg_per_day = total_spent_num / days if days > 0 else 0
         st.metric("Avg per Day", f"${avg_per_day:.2f}")
 
     st.markdown("---")
@@ -247,16 +291,40 @@ def main():
         filtered_df = filtered_df[filtered_df['amount'] >= min_amount]
 
     # Display table
-    display_cols = ['date', 'merchant', 'amount', 'category'] if 'category' in filtered_df.columns else ['date', 'merchant', 'amount']
+    display_cols = ['date', 'merchant', 'amount', 'category']
+    if 'category' not in filtered_df.columns:
+        display_cols = ['date', 'merchant', 'amount']
+    if 'currency' in filtered_df.columns and 'currency' not in display_cols:
+        display_cols.insert(3, 'currency')
 
-    st.dataframe(
-        filtered_df[display_cols].sort_values('date', ascending=False).head(50).style.format({
-            'amount': '${:,.2f}',
-            'date': lambda x: x.strftime('%Y-%m-%d %H:%M') if pd.notnull(x) else ''
-        }),
-        use_container_width=True,
-        height=400
-    )
+    # Format the display
+    display_df = filtered_df[display_cols].sort_values('date', ascending=False).head(50).copy()
+
+    # Add formatted amount column
+    if 'currency' in display_df.columns:
+        display_df['formatted_amount'] = display_df.apply(format_amount, axis=1)
+        # Rearrange columns to show formatted_amount instead of amount
+        cols_to_show = [col for col in display_cols if col != 'amount' and col != 'currency']
+        cols_to_show.insert(2, 'formatted_amount')
+        display_df = display_df[cols_to_show]
+        display_df.columns = [col.replace('formatted_amount', 'Amount').title() for col in display_df.columns]
+
+        st.dataframe(
+            display_df.style.format({
+                'Date': lambda x: x.strftime('%Y-%m-%d %H:%M') if pd.notnull(x) else ''
+            }),
+            use_container_width=True,
+            height=400
+        )
+    else:
+        st.dataframe(
+            display_df.style.format({
+                'amount': '${:,.2f}',
+                'date': lambda x: x.strftime('%Y-%m-%d %H:%M') if pd.notnull(x) else ''
+            }),
+            use_container_width=True,
+            height=400
+        )
 
     # Export button
     st.markdown("---")

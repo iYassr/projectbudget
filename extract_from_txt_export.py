@@ -213,6 +213,7 @@ if new_expenses:
             'amount': exp['amount'],
             'merchant': exp['merchant'],
             'category': exp.get('category', 'Uncategorized'),
+            'currency': exp.get('currency', 'SAR'),
             'sender': exp.get('sender', ''),
             'raw_message': exp['raw_message'],
             'notes': ''
