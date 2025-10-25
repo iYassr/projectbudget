@@ -17,7 +17,7 @@ from categorizer import ExpenseCategorizer
 try:
     from config import (ALLOWED_SENDERS, ENABLE_SENDER_FILTER, DEBUG_SENDER_FILTER,
                         MY_ACCOUNTS, ENABLE_TRANSFER_FILTER, DEBUG_TRANSFER_FILTER,
-                        USE_AI_CATEGORIZATION)
+                        USE_AI_CATEGORIZATION, AI_PROVIDER)
 except ImportError:
     # Default behavior if config.py doesn't exist
     ALLOWED_SENDERS = []
@@ -27,6 +27,7 @@ except ImportError:
     ENABLE_TRANSFER_FILTER = False
     DEBUG_TRANSFER_FILTER = False
     USE_AI_CATEGORIZATION = False
+    AI_PROVIDER = 'openai'
 
 # Path to TXT export folder
 EXPORT_PATH = os.path.expanduser("~/messages_export")
@@ -220,10 +221,11 @@ if not expenses:
 # Categorize
 print(f"\n[4/5] Categorizing...")
 if USE_AI_CATEGORIZATION:
-    print(f"  🤖 Using AI-powered categorization (Claude)")
+    provider_name = "OpenAI GPT-4o-mini" if AI_PROVIDER == 'openai' else "Anthropic Claude"
+    print(f"  🤖 Using AI-powered categorization ({provider_name})")
 else:
     print(f"  📋 Using rule-based categorization")
-categorizer = ExpenseCategorizer(use_ai=USE_AI_CATEGORIZATION)
+categorizer = ExpenseCategorizer(use_ai=USE_AI_CATEGORIZATION, ai_provider=AI_PROVIDER)
 
 # Track categorization methods
 method_counts = {'cached': 0, 'rules': 0, 'ai': 0, 'default': 0}

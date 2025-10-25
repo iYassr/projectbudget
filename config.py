@@ -89,12 +89,21 @@ DEBUG_TRANSFER_FILTER = False
 # =============================================================================
 # AI CATEGORIZATION
 # =============================================================================
-# Use AI (Claude) to categorize expenses intelligently
-# - True: Uses Claude API for smart categorization (requires ANTHROPIC_API_KEY)
+# Use AI to categorize expenses intelligently
+# - True: Uses AI API for smart categorization (requires API key)
 # - False: Uses simple rule-based categorization (less accurate but free)
 #
-# Note: AI categorization costs ~$0.001 per expense (very cheap but not free)
-# Make sure you have ANTHROPIC_API_KEY in your .env file to enable
+# AI Provider Options:
+# - 'openai': Uses GPT-4o-mini (~$0.0001 per expense) - RECOMMENDED
+# - 'anthropic': Uses Claude (~$0.001 per expense)
+#
+# Setup:
+# 1. Choose your provider below
+# 2. Add API key to .env file:
+#    - For OpenAI: OPENAI_API_KEY=sk-...
+#    - For Anthropic: ANTHROPIC_API_KEY=sk-ant-...
+# 3. Install package: pip install openai (or pip install anthropic)
 # =============================================================================
 
 USE_AI_CATEGORIZATION = False  # Set to True to enable AI categorization
+AI_PROVIDER = 'openai'  # 'openai' (cheaper) or 'anthropic'

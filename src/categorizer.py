@@ -5,15 +5,27 @@ import os
 import json
 from typing import Dict, List, Optional
 import pandas as pd
-from anthropic import Anthropic
 from dotenv import load_dotenv
+
+# Try importing both AI providers
+try:
+    from anthropic import Anthropic
+    HAS_ANTHROPIC = True
+except ImportError:
+    HAS_ANTHROPIC = False
+
+try:
+    from openai import OpenAI
+    HAS_OPENAI = True
+except ImportError:
+    HAS_OPENAI = False
 
 
 class ExpenseCategorizer:
     """Categorize expenses using AI and rule-based approaches"""
 
     def __init__(self, config_path: str = "config/categories.json", use_ai: bool = True,
-                 cache_path: str = "merchant_cache.json"):
+                 cache_path: str = "merchant_cache.json", ai_provider: str = "openai"):
         """
         Initialize categorizer
 
@@ -21,6 +33,7 @@ class ExpenseCategorizer:
             config_path: Path to categories configuration file
             use_ai: Whether to use AI for categorization (requires API key)
             cache_path: Path to merchant cache file (to avoid repeated AI calls)
+            ai_provider: AI provider to use ('openai' or 'anthropic')
         """
         # Load categories configuration
         with open(config_path, 'r') as f:
@@ -30,6 +43,7 @@ class ExpenseCategorizer:
         self.merchant_keywords = config['merchant_keywords']
         self.use_ai = use_ai
         self.cache_path = cache_path
+        self.ai_provider = ai_provider.lower()
 
         # Load merchant cache
         self.merchant_cache = {}
@@ -41,15 +55,37 @@ class ExpenseCategorizer:
             except:
                 self.merchant_cache = {}
 
-        # Initialize Anthropic client if using AI
+        # Initialize AI client if using AI
         self.client = None
         if use_ai:
             load_dotenv()
-            api_key = os.getenv('ANTHROPIC_API_KEY')
-            if api_key:
-                self.client = Anthropic(api_key=api_key)
+
+            if self.ai_provider == 'openai':
+                api_key = os.getenv('OPENAI_API_KEY')
+                if api_key and HAS_OPENAI:
+                    self.client = OpenAI(api_key=api_key)
+                    print("Using OpenAI GPT for categorization")
+                elif not HAS_OPENAI:
+                    print("Warning: openai package not installed. Run: pip install openai")
+                    self.use_ai = False
+                else:
+                    print("Warning: OPENAI_API_KEY not found. Falling back to rule-based categorization.")
+                    self.use_ai = False
+
+            elif self.ai_provider == 'anthropic':
+                api_key = os.getenv('ANTHROPIC_API_KEY')
+                if api_key and HAS_ANTHROPIC:
+                    self.client = Anthropic(api_key=api_key)
+                    print("Using Anthropic Claude for categorization")
+                elif not HAS_ANTHROPIC:
+                    print("Warning: anthropic package not installed. Run: pip install anthropic")
+                    self.use_ai = False
+                else:
+                    print("Warning: ANTHROPIC_API_KEY not found. Falling back to rule-based categorization.")
+                    self.use_ai = False
+
             else:
-                print("Warning: ANTHROPIC_API_KEY not found. Falling back to rule-based categorization.")
+                print(f"Warning: Unknown AI provider '{self.ai_provider}'. Use 'openai' or 'anthropic'.")
                 self.use_ai = False
 
     def categorize_expense(
@@ -198,7 +234,7 @@ class ExpenseCategorizer:
         raw_message: Optional[str] = None
     ) -> Optional[str]:
         """
-        Categorize using Claude AI
+        Categorize using AI (OpenAI or Anthropic)
 
         Args:
             merchant: Merchant name
@@ -226,15 +262,32 @@ Expense details:
 Respond with ONLY the category name from the list above. Choose the most appropriate category."""
 
         try:
-            message = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
-                max_tokens=50,
-                messages=[
-                    {"role": "user", "content": prompt}
-                ]
-            )
+            if self.ai_provider == 'openai':
+                # OpenAI API call
+                response = self.client.chat.completions.create(
+                    model="gpt-4o-mini",  # Cheap and fast
+                    messages=[
+                        {"role": "system", "content": "You are a financial categorization assistant. Respond with only the category name."},
+                        {"role": "user", "content": prompt}
+                    ],
+                    max_tokens=20,
+                    temperature=0
+                )
+                category = response.choices[0].message.content.strip()
 
-            category = message.content[0].text.strip()
+            elif self.ai_provider == 'anthropic':
+                # Anthropic API call
+                message = self.client.messages.create(
+                    model="claude-3-5-sonnet-20241022",
+                    max_tokens=50,
+                    messages=[
+                        {"role": "user", "content": prompt}
+                    ]
+                )
+                category = message.content[0].text.strip()
+
+            else:
+                return None
 
             # Validate category is in our list
             if category in self.categories:
