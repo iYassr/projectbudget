@@ -56,51 +56,72 @@ total_lines = 0
 for txt_file in txt_files:
     try:
         with open(txt_file, 'r', encoding='utf-8') as f:
-            content = f.read()
+            file_lines = f.readlines()
 
-        # Split by date/timestamp patterns
-        # Common patterns: [2025-10-25 20:14:08] or similar
-        lines = content.split('\n')
-
-        current_message = []
-        current_date = None
-
-        for line in lines:
+        i = 0
+        while i < len(file_lines):
+            line = file_lines[i].strip()
             total_lines += 1
 
-            # Try to extract date from line like: [2025-10-25 20:14:08]
-            date_match = re.search(r'\[(\d{4}-\d{2}-\d{2}\s+\d{2}:\d{2}:\d{2})\]', line)
+            # Look for date line: "Oct 25, 2025  8:14:08 PM"
+            date_match = re.match(r'([A-Z][a-z]{2}\s+\d{1,2},\s+\d{4}\s+\d{1,2}:\d{2}:\d{2}\s+[AP]M)', line)
 
             if date_match:
-                # Save previous message if exists
-                if current_message and current_date:
-                    msg_text = '\n'.join(current_message)
+                date_str = date_match.group(1)
+
+                # Convert to standard format
+                try:
+                    dt = datetime.strptime(date_str, '%b %d, %Y %I:%M:%S %p')
+                    standard_date = dt.strftime('%Y-%m-%d %H:%M:%S')
+                except:
+                    i += 1
+                    continue
+
+                # Next line should be sender
+                i += 1
+                if i >= len(file_lines):
+                    break
+
+                sender = file_lines[i].strip()
+
+                # Skip if sent by "Me"
+                if sender == "Me":
+                    i += 1
+                    continue
+
+                # Collect message lines
+                i += 1
+                message_lines = []
+
+                while i < len(file_lines):
+                    next_line = file_lines[i].strip()
+
+                    # Stop if we hit another date or separator
+                    if re.match(r'[A-Z][a-z]{2}\s+\d{1,2},\s+\d{4}', next_line):
+                        break
+                    if next_line.startswith('Tapbacks:') or next_line.startswith('==>'):
+                        break
+                    if next_line.startswith('(Read by you'):
+                        i += 1
+                        continue
+
+                    if next_line:
+                        message_lines.append(next_line)
+
+                    i += 1
+
+                if message_lines:
+                    msg_text = '\n'.join(message_lines)
+
                     # Check for financial keywords
                     if any(kw.lower() in msg_text.lower() for kw in FINANCIAL_KEYWORDS):
                         messages.append({
                             'text': msg_text,
-                            'date': current_date,
-                            'sender': 'Unknown'
+                            'date': standard_date,
+                            'sender': sender
                         })
-
-                # Start new message
-                current_date = date_match.group(1)
-                # Remove date from line and keep the rest
-                current_message = [line.split(']', 1)[1].strip() if ']' in line else '']
             else:
-                # Continue current message
-                if line.strip():
-                    current_message.append(line.strip())
-
-        # Don't forget last message
-        if current_message and current_date:
-            msg_text = '\n'.join(current_message)
-            if any(kw.lower() in msg_text.lower() for kw in FINANCIAL_KEYWORDS):
-                messages.append({
-                    'text': msg_text,
-                    'date': current_date,
-                    'sender': 'Unknown'
-                })
+                i += 1
 
     except Exception as e:
         print(f"  ⚠ Error reading {txt_file.name}: {e}")
