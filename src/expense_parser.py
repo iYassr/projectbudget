@@ -22,18 +22,25 @@ class ExpenseParser:
             'amount_group': 1,
             'merchant_group': 2
         },
-        # Arabic Pattern: "حوالة ... مبلغ:SAR 10000 الى:Name"
+        # English/Arabic Mixed: "Amount:139.40 SAR Balance:... At:Keeta" (handles newlines)
         {
-            'pattern': r'حوالة.*?(?:مبلغ|المبلغ):?\s*(?:SAR|SR|ريال)?\s*([\d,]+\.?\d*)',
+            'pattern': r'(?:Amount|مبلغ):?\s*([\d,]+\.?\d*)\s*(?:SAR|SR|ريال)?[\s\S]*?(?:At|لدى|لدي):?\s*([^\n\r]+?)(?:\s+A/C|$)',
+            'amount_group': 1,
+            'merchant_group': 2
+        },
+        # Arabic Pattern with colon format: "المبلغSAR 10,000.00"
+        {
+            'pattern': r'(?:المبلغ|مبلغ)\s*(?:SAR|SR|ريال)?\s*([\d,]+\.?\d*)',
             'amount_group': 1,
             'merchant_group': None,
             'default_merchant': 'Transfer'
         },
-        # English/Arabic Mixed: "Amount:139.40 SAR ... At:Keeta"
+        # Arabic Transfer Pattern: "حوالة ... مبلغ:SAR 10000 الى:Name"
         {
-            'pattern': r'(?:Amount|مبلغ):?\s*(?:SAR|SR|ريال)?\s*([\d,]+\.?\d*)\s*(?:SAR|SR|ريال)?.*?(?:At|لدى|لدي):?\s*(.+?)(?:\s+A/C|\n|$)',
+            'pattern': r'حوالة[\s\S]*?(?:مبلغ|المبلغ):?\s*(?:SAR|SR|ريال)?\s*([\d,]+\.?\d*)',
             'amount_group': 1,
-            'merchant_group': 2
+            'merchant_group': None,
+            'default_merchant': 'Transfer'
         },
         # Pattern: "spent $50.00 at Starbucks"
         {
@@ -102,7 +109,7 @@ class ExpenseParser:
 
         # Try each pattern
         for pattern_info in self.PATTERNS:
-            match = re.search(pattern_info['pattern'], message, re.IGNORECASE)
+            match = re.search(pattern_info['pattern'], message, re.IGNORECASE | re.DOTALL)
 
             if match:
                 # Extract amount
