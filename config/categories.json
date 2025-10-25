@@ -1,0 +1,31 @@
+{
+  "categories": [
+    "Food & Dining",
+    "Groceries",
+    "Transportation",
+    "Shopping",
+    "Bills & Utilities",
+    "Entertainment",
+    "Healthcare",
+    "Travel",
+    "Education",
+    "Personal Care",
+    "Insurance",
+    "Investments",
+    "ATM/Cash Withdrawal",
+    "Transfer",
+    "Other"
+  ],
+  "merchant_keywords": {
+    "Food & Dining": ["restaurant", "cafe", "coffee", "pizza", "burger", "food", "dining", "ubereats", "doordash", "grubhub", "zomato", "swiggy"],
+    "Groceries": ["grocery", "supermarket", "walmart", "target", "whole foods", "trader joe", "safeway", "kroger"],
+    "Transportation": ["uber", "lyft", "taxi", "gas", "fuel", "parking", "metro", "transit", "subway"],
+    "Shopping": ["amazon", "ebay", "store", "shop", "retail", "mall"],
+    "Bills & Utilities": ["electric", "water", "internet", "phone", "bill", "utility", "subscription"],
+    "Entertainment": ["movie", "cinema", "netflix", "spotify", "gaming", "steam", "playstation"],
+    "Healthcare": ["pharmacy", "hospital", "doctor", "medical", "health", "cvs", "walgreens"],
+    "Travel": ["hotel", "airbnb", "airline", "flight", "booking"],
+    "ATM/Cash Withdrawal": ["atm", "cash withdrawal", "withdrawn"],
+    "Transfer": ["transfer", "sent to", "received from"]
+  }
+}
