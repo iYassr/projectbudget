@@ -143,13 +143,31 @@ def main():
 
     with col3:
         avg_transaction = df['amount'].mean()
-        st.metric("Avg Transaction", f"${avg_transaction:.2f}")
+        # Use primary currency for averages
+        if 'currency' in df.columns and not df.empty:
+            primary_currency = df['currency'].mode()[0] if len(df['currency'].mode()) > 0 else 'SAR'
+            symbol = CURRENCY_SYMBOLS.get(primary_currency, primary_currency)
+            if primary_currency == 'SAR':
+                st.metric("Avg Transaction", f"{symbol} {avg_transaction:.2f}")
+            else:
+                st.metric("Avg Transaction", f"{symbol}{avg_transaction:.2f}")
+        else:
+            st.metric("Avg Transaction", f"${avg_transaction:.2f}")
 
     with col4:
         days = (end_date - start_date).days + 1
         total_spent_num = df['amount'].sum()
         avg_per_day = total_spent_num / days if days > 0 else 0
-        st.metric("Avg per Day", f"${avg_per_day:.2f}")
+        # Use primary currency for daily average
+        if 'currency' in df.columns and not df.empty:
+            primary_currency = df['currency'].mode()[0] if len(df['currency'].mode()) > 0 else 'SAR'
+            symbol = CURRENCY_SYMBOLS.get(primary_currency, primary_currency)
+            if primary_currency == 'SAR':
+                st.metric("Avg per Day", f"{symbol} {avg_per_day:.2f}")
+            else:
+                st.metric("Avg per Day", f"{symbol}{avg_per_day:.2f}")
+        else:
+            st.metric("Avg per Day", f"${avg_per_day:.2f}")
 
     st.markdown("---")
 
@@ -208,10 +226,21 @@ def main():
             # Add percentage
             category_summary['Percentage'] = (category_summary['Total'] / category_summary['Total'].sum() * 100).round(1)
 
+            # Determine primary currency for formatting
+            if 'currency' in df.columns:
+                primary_currency = df['currency'].mode()[0] if len(df['currency'].mode()) > 0 else 'SAR'
+                symbol = CURRENCY_SYMBOLS.get(primary_currency, primary_currency)
+                if primary_currency == 'SAR':
+                    format_str = f'{symbol} {{:,.2f}}'
+                else:
+                    format_str = f'{symbol}{{:,.2f}}'
+            else:
+                format_str = '${:,.2f}'
+
             st.dataframe(
                 category_summary.style.format({
-                    'Total': '${:,.2f}',
-                    'Average': '${:,.2f}',
+                    'Total': format_str,
+                    'Average': format_str,
                     'Percentage': '{:.1f}%'
                 }),
                 use_container_width=True
@@ -222,11 +251,18 @@ def main():
 
         merchant_summary = df.groupby('merchant')['amount'].sum().sort_values(ascending=False).head(10)
 
+        # Determine currency for axis label
+        if 'currency' in df.columns:
+            primary_currency = df['currency'].mode()[0] if len(df['currency'].mode()) > 0 else 'SAR'
+            currency_label = CURRENCY_SYMBOLS.get(primary_currency, primary_currency)
+        else:
+            currency_label = '$'
+
         fig_merchants = px.bar(
             x=merchant_summary.values,
             y=merchant_summary.index,
             orientation='h',
-            labels={'x': 'Amount ($)', 'y': 'Merchant'}
+            labels={'x': f'Amount ({currency_label})', 'y': 'Merchant'}
         )
         fig_merchants.update_layout(height=400, showlegend=False)
         st.plotly_chart(fig_merchants, use_container_width=True)
