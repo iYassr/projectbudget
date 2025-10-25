@@ -12,7 +12,11 @@ print("=" * 80)
 print("Testing Parser Improvements")
 print("=" * 80)
 
-parser = ExpenseParser()
+# Test with account configuration
+MY_TEST_ACCOUNTS = ['3057', '3001', 'YASSER ABDULRAHMAN ALDOSARI']
+parser = ExpenseParser(my_accounts=MY_TEST_ACCOUNTS)
+print(f"\n🔧 Test Configuration:")
+print(f"   My Accounts: {MY_TEST_ACCOUNTS}\n")
 
 # Test cases
 test_messages = [
@@ -51,6 +55,24 @@ test_messages = [
         'description': 'Deposit/Credit (should be EXCLUDED)',
         'message': "إيداع مبلغ SAR 5000 في حسابك",
         'expected': None
+    },
+    {
+        'description': 'Internal transfer - between own accounts (should be EXCLUDED)',
+        'message': """حوالة محلية
+عبر:SAIB
+مبلغ:SAR 5000
+من:3057
+الى:3001""",
+        'expected': None
+    },
+    {
+        'description': 'External transfer - to friend (should be INCLUDED as expense)',
+        'message': """حوالة محلية
+عبر:SAIB
+مبلغ:SAR 1000
+من:3057
+الى:أحمد الغامدي""",
+        'expected': 'transfer'
     },
 ]
 

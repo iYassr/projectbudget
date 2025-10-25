@@ -42,3 +42,35 @@ ENABLE_SENDER_FILTER = True
 
 # Set to True to see which senders are being filtered out
 DEBUG_SENDER_FILTER = False
+
+
+# =============================================================================
+# ACCOUNT WHITELIST (for Transfer Filtering)
+# =============================================================================
+# List your own account numbers/names here
+# Transfers involving ONLY your accounts will be excluded (not expenses)
+# Transfers to other people's accounts will be INCLUDED (those are expenses)
+#
+# Example account identifiers from your bank messages:
+# - Account numbers: '3057', '3001', '1234'
+# - Account names: 'YASSER ABDULRAHMAN ALDOSARI'
+# - Partial matches work too
+#
+# To find your account identifiers:
+# 1. Look at transfer messages in your Messages app
+# 2. Find the "من:" (from) and "الى:" (to) fields
+# 3. Add YOUR account numbers/names to the list below
+# =============================================================================
+
+MY_ACCOUNTS = [
+    # Add your account numbers and names here
+    # '3057',
+    # '3001',
+    # 'YASSER ABDULRAHMAN ALDOSARI',
+]
+
+# Set to True to enable transfer filtering (exclude transfers between your own accounts)
+ENABLE_TRANSFER_FILTER = False
+
+# Set to True to see which transfers are being filtered
+DEBUG_TRANSFER_FILTER = False

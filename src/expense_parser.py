@@ -40,6 +40,12 @@ class ExpenseParser:
         'لا تشارك',      # Do not share (Arabic)
     ]
 
+    # Transfer keywords (used for smart filtering with account whitelist)
+    TRANSFER_KEYWORDS = [
+        'حوالة',         # Transfer (Arabic)
+        'تحويل',         # Transfer (Arabic)
+    ]
+
     # Regex patterns for different message formats
     PATTERNS = [
         # Arabic Pattern: "شراء بطاقة:9206 مبلغ:SAR 114.38 لدى:SASCO" or "شراء إنترنت ... لدى:Amazon"
@@ -114,9 +120,50 @@ class ExpenseParser:
         }
     ]
 
-    def __init__(self):
-        """Initialize the expense parser"""
-        pass
+    def __init__(self, my_accounts=None):
+        """
+        Initialize the expense parser
+
+        Args:
+            my_accounts: List of your account identifiers for transfer filtering
+        """
+        self.my_accounts = my_accounts or []
+
+    def _is_internal_transfer(self, message: str) -> bool:
+        """
+        Check if a transfer message is between your own accounts
+
+        Args:
+            message: SMS message text
+
+        Returns:
+            True if transfer is between your own accounts, False otherwise
+        """
+        if not self.my_accounts:
+            return False
+
+        # Check if this is a transfer message
+        is_transfer = any(keyword in message for keyword in self.TRANSFER_KEYWORDS)
+        if not is_transfer:
+            return False
+
+        # Extract "من:" (from) and "الى:" (to) fields
+        from_match = re.search(r'من[:\s]+([^\n\r]+)', message)
+        to_match = re.search(r'الى[:\s]+([^\n\r]+)', message)
+
+        # If we found both from and to fields
+        if from_match and to_match:
+            from_field = from_match.group(1).strip()
+            to_field = to_match.group(1).strip()
+
+            # Check if both belong to your accounts
+            from_is_mine = any(acc in from_field for acc in self.my_accounts)
+            to_is_mine = any(acc in to_field for acc in self.my_accounts)
+
+            # If both from and to are your accounts, it's internal
+            return from_is_mine and to_is_mine
+
+        return False
 
     def parse_message(self, message: str) -> Optional[Dict]:
         """
@@ -136,6 +183,10 @@ class ExpenseParser:
         # Check if message is an OTP/verification code (exclude these)
         message_lower = message.lower()
         if any(keyword.lower() in message_lower for keyword in self.OTP_KEYWORDS):
+            return None
+
+        # Check if message is an internal transfer (between your own accounts)
+        if self._is_internal_transfer(message):
             return None
 
         # Check if message is incoming money (exclude these from expenses)

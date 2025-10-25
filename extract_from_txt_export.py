@@ -15,12 +15,16 @@ from categorizer import ExpenseCategorizer
 
 # Import configuration
 try:
-    from config import ALLOWED_SENDERS, ENABLE_SENDER_FILTER, DEBUG_SENDER_FILTER
+    from config import (ALLOWED_SENDERS, ENABLE_SENDER_FILTER, DEBUG_SENDER_FILTER,
+                        MY_ACCOUNTS, ENABLE_TRANSFER_FILTER, DEBUG_TRANSFER_FILTER)
 except ImportError:
     # Default behavior if config.py doesn't exist
     ALLOWED_SENDERS = []
     ENABLE_SENDER_FILTER = False
     DEBUG_SENDER_FILTER = False
+    MY_ACCOUNTS = []
+    ENABLE_TRANSFER_FILTER = False
+    DEBUG_TRANSFER_FILTER = False
 
 # Path to TXT export folder
 EXPORT_PATH = os.path.expanduser("~/messages_export")
@@ -38,6 +42,18 @@ if ENABLE_SENDER_FILTER:
 else:
     print(f"\n🔍 Sender Filter: DISABLED (processing all senders)")
     print(f"   💡 To enable filtering, edit config.py")
+
+# Show transfer filter configuration
+if ENABLE_TRANSFER_FILTER and MY_ACCOUNTS:
+    print(f"\n🔄 Transfer Filter: ENABLED")
+    print(f"   Excluding internal transfers between your {len(MY_ACCOUNTS)} account(s)")
+    if DEBUG_TRANSFER_FILTER:
+        print(f"   Your accounts: {', '.join(MY_ACCOUNTS)}")
+elif ENABLE_TRANSFER_FILTER and not MY_ACCOUNTS:
+    print(f"\n⚠️  Transfer Filter: ENABLED but no accounts configured!")
+    print(f"   Add your accounts to MY_ACCOUNTS in config.py")
+else:
+    print(f"\n🔄 Transfer Filter: DISABLED")
 
 if not os.path.exists(EXPORT_PATH):
     print(f"\n❌ Export folder not found at: {EXPORT_PATH}")
@@ -171,7 +187,9 @@ for msg in messages[:5]:
 
 # Parse expenses
 print(f"\n[3/5] Parsing expenses...")
-parser = ExpenseParser()
+# Initialize parser with account list for transfer filtering
+parser_accounts = MY_ACCOUNTS if ENABLE_TRANSFER_FILTER else []
+parser = ExpenseParser(my_accounts=parser_accounts)
 expenses = []
 
 for msg in messages:
