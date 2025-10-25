@@ -91,9 +91,10 @@ DEBUG_TRANSFER_FILTER = False
 # =============================================================================
 # Use AI (Claude) to categorize expenses intelligently
 # - True: Uses Claude API for smart categorization (requires ANTHROPIC_API_KEY)
-# - False: Uses simple rule-based categorization (less accurate)
+# - False: Uses simple rule-based categorization (less accurate but free)
 #
-# Make sure you have ANTHROPIC_API_KEY in your .env file
+# Note: AI categorization costs ~$0.001 per expense (very cheap but not free)
+# Make sure you have ANTHROPIC_API_KEY in your .env file to enable
 # =============================================================================
 
-USE_AI_CATEGORIZATION = True
+USE_AI_CATEGORIZATION = False  # Set to True to enable AI categorization
