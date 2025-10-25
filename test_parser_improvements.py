@@ -12,8 +12,14 @@ print("=" * 80)
 print("Testing Parser Improvements")
 print("=" * 80)
 
-# Test with account configuration
-MY_TEST_ACCOUNTS = ['3057', '3001', 'YASSER ABDULRAHMAN ALDOSARI', 'ياسر عبدالرحمن الدوس']
+# Test with account configuration (including wallets)
+MY_TEST_ACCOUNTS = [
+    '3057', '3001',
+    'YASSER ABDULRAHMAN ALDOSARI',
+    'ياسر عبدالرحمن الدوس',
+    'Barq',  # Wallet
+    'BARQ',  # Alternative capitalization
+]
 parser = ExpenseParser(my_accounts=MY_TEST_ACCOUNTS)
 print(f"\n🔧 Test Configuration:")
 print(f"   My Accounts: {MY_TEST_ACCOUNTS}\n")
@@ -85,6 +91,26 @@ test_messages = [
 الرسوم SAR 0.00
 في10-25 23:13""",
         'expected': None
+    },
+    {
+        'description': 'Wallet top-up - Bank to Barq (should be EXCLUDED)',
+        'message': """شراء انترنت
+بطاقة:9206;مدى-ابل باي
+من:3057
+مبلغ:SAR 100
+لدى:Barq
+في:25-10-26 02:29""",
+        'expected': None
+    },
+    {
+        'description': 'Real purchase at merchant (should be INCLUDED)',
+        'message': """شراء انترنت
+بطاقة:9206;مدى-ابل باي
+من:3057
+مبلغ:SAR 50
+لدى:Amazon
+في:25-10-26 02:29""",
+        'expected': 'expense'
     },
 ]
 

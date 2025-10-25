@@ -64,9 +64,19 @@ DEBUG_SENDER_FILTER = False
 
 MY_ACCOUNTS = [
     # Add your account numbers and names here
+    # Bank accounts:
     # '3057',
     # '3001',
+    # 'X3057',
+    # 'X3001',
     # 'YASSER ABDULRAHMAN ALDOSARI',
+    # 'ياسر عبدالرحمن الدوس',
+
+    # Wallets (to exclude wallet top-ups):
+    # 'Barq',
+    # 'BARQ',
+    # 'STC Pay',
+    # 'Urpay',
 ]
 
 # Set to True to enable transfer filtering (exclude transfers between your own accounts)

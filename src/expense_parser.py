@@ -131,7 +131,11 @@ class ExpenseParser:
 
     def _is_internal_transfer(self, message: str) -> bool:
         """
-        Check if a transfer message is between your own accounts
+        Check if a message is an internal transfer between your own accounts/wallets
+
+        This includes:
+        - Transfers with حوالة keyword (من:3057 → الى:3001)
+        - Wallet top-ups with شراء keyword (من:3057 → لدى:Barq)
 
         Args:
             message: SMS message text
@@ -142,31 +146,37 @@ class ExpenseParser:
         if not self.my_accounts:
             return False
 
-        # Check if this is a transfer message
-        is_transfer = any(keyword in message for keyword in self.TRANSFER_KEYWORDS)
-        if not is_transfer:
-            return False
-
-        # Extract ALL "من" (from) and "الى" (to) fields
+        # Extract ALL "من" (from), "الى" (to), and "لدى" (at) fields
         # Pattern matches: "منX3001", "من:3001", "من 3001", "من:ياسر"
         from_matches = re.findall(r'من[:\s]*([^\n\r]+)', message)
         to_matches = re.findall(r'الى[:\s]*([^\n\r]+)', message)
+        at_matches = re.findall(r'لدى[:\s]*([^\n\r]+)', message)  # "at" field (e.g., لدى:Barq)
+
+        # If no "من" field, this is not an internal transfer
+        if not from_matches:
+            return False
+
+        # Combine to_matches and at_matches (both indicate destination)
+        destination_matches = to_matches + at_matches
+
+        # If no destination field, not an internal transfer
+        if not destination_matches:
+            return False
 
         # Check if ANY combination indicates internal transfer
-        # (from your account to your account)
-        if from_matches and to_matches:
-            for from_field in from_matches:
-                from_field = from_field.strip()
-                from_is_mine = any(acc in from_field for acc in self.my_accounts)
+        # (from your account to your account/wallet)
+        for from_field in from_matches:
+            from_field = from_field.strip()
+            from_is_mine = any(acc in from_field for acc in self.my_accounts)
 
-                if from_is_mine:
-                    for to_field in to_matches:
-                        to_field = to_field.strip()
-                        to_is_mine = any(acc in to_field for acc in self.my_accounts)
+            if from_is_mine:
+                for dest_field in destination_matches:
+                    dest_field = dest_field.strip()
+                    dest_is_mine = any(acc in dest_field for acc in self.my_accounts)
 
-                        # If both from and to belong to you, it's internal
-                        if to_is_mine:
-                            return True
+                    # If both from and destination belong to you, it's internal
+                    if dest_is_mine:
+                        return True
 
         return False
 
