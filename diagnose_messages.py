@@ -5,7 +5,7 @@ Run this on your Mac to see what's in the database
 """
 import sqlite3
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 # Messages database path
 DB_PATH = os.path.expanduser("~/Library/Messages/chat.db")
@@ -42,8 +42,8 @@ try:
     if min_date and max_date:
         # Convert from Mac epoch to Unix epoch
         mac_epoch = datetime(2001, 1, 1)
-        min_dt = mac_epoch + datetime.timedelta(seconds=min_date/1e9)
-        max_dt = mac_epoch + datetime.timedelta(seconds=max_date/1e9)
+        min_dt = mac_epoch + timedelta(seconds=min_date/1e9)
+        max_dt = mac_epoch + timedelta(seconds=max_date/1e9)
 
         print(f"Date range: {min_dt.strftime('%Y-%m-%d')} to {max_dt.strftime('%Y-%m-%d')}")
 
