@@ -19,7 +19,7 @@ parser = ExpenseParser()
 
 print("\n[1] Extracting ALL messages...")
 all_messages = extractor.extract_messages()
-print(f"  Total extracted: {all_messages:,}")
+print(f"  Total extracted: {len(all_messages):,}")
 
 # Filter to 2025
 import pandas as pd
