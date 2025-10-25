@@ -40,10 +40,14 @@ def main():
 
     date_option = st.sidebar.selectbox(
         "Select Period",
-        ["This Month", "Last Month", "Last 3 Months", "Last 6 Months", "Custom Range"]
+        ["All Time", "This Month", "Last Month", "Last 3 Months", "Last 6 Months", "Custom Range"]
     )
 
-    if date_option == "This Month":
+    if date_option == "All Time":
+        # Get all expenses from database
+        start_date = datetime(2020, 1, 1)  # Far back enough
+        end_date = datetime.now()
+    elif date_option == "This Month":
         now = datetime.now()
         start_date = datetime(now.year, now.month, 1)
         end_date = now
