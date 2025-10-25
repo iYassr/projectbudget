@@ -147,21 +147,26 @@ class ExpenseParser:
         if not is_transfer:
             return False
 
-        # Extract "من:" (from) and "الى:" (to) fields
-        from_match = re.search(r'من[:\s]+([^\n\r]+)', message)
-        to_match = re.search(r'الى[:\s]+([^\n\r]+)', message)
+        # Extract ALL "من" (from) and "الى" (to) fields
+        # Pattern matches: "منX3001", "من:3001", "من 3001", "من:ياسر"
+        from_matches = re.findall(r'من[:\s]*([^\n\r]+)', message)
+        to_matches = re.findall(r'الى[:\s]*([^\n\r]+)', message)
 
-        # If we found both from and to fields
-        if from_match and to_match:
-            from_field = from_match.group(1).strip()
-            to_field = to_match.group(1).strip()
+        # Check if ANY combination indicates internal transfer
+        # (from your account to your account)
+        if from_matches and to_matches:
+            for from_field in from_matches:
+                from_field = from_field.strip()
+                from_is_mine = any(acc in from_field for acc in self.my_accounts)
 
-            # Check if both belong to your accounts
-            from_is_mine = any(acc in from_field for acc in self.my_accounts)
-            to_is_mine = any(acc in to_field for acc in self.my_accounts)
+                if from_is_mine:
+                    for to_field in to_matches:
+                        to_field = to_field.strip()
+                        to_is_mine = any(acc in to_field for acc in self.my_accounts)
 
-            # If both from and to are your accounts, it's internal
-            return from_is_mine and to_is_mine
+                        # If both from and to belong to you, it's internal
+                        if to_is_mine:
+                            return True
 
         return False
 

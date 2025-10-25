@@ -13,7 +13,7 @@ print("Testing Parser Improvements")
 print("=" * 80)
 
 # Test with account configuration
-MY_TEST_ACCOUNTS = ['3057', '3001', 'YASSER ABDULRAHMAN ALDOSARI']
+MY_TEST_ACCOUNTS = ['3057', '3001', 'YASSER ABDULRAHMAN ALDOSARI', 'ياسر عبدالرحمن الدوس']
 parser = ExpenseParser(my_accounts=MY_TEST_ACCOUNTS)
 print(f"\n🔧 Test Configuration:")
 print(f"   My Accounts: {MY_TEST_ACCOUNTS}\n")
@@ -73,6 +73,18 @@ test_messages = [
 من:3057
 الى:أحمد الغامدي""",
         'expected': 'transfer'
+    },
+    {
+        'description': 'Internal transfer - real RJHI format (should be EXCLUDED)',
+        'message': """حوالة محلية
+المصرفRJHI
+المبلغSAR 10,000.00
+منX3001
+الى:ياسر عبدالرحمن الدوس
+الىX3057
+الرسوم SAR 0.00
+في10-25 23:13""",
+        'expected': None
     },
 ]
 
