@@ -167,12 +167,14 @@ class ExpenseParser:
         # (from your account to your account/wallet)
         for from_field in from_matches:
             from_field = from_field.strip()
-            from_is_mine = any(acc in from_field for acc in self.my_accounts)
+            # Case-insensitive matching
+            from_is_mine = any(acc.lower() in from_field.lower() for acc in self.my_accounts)
 
             if from_is_mine:
                 for dest_field in destination_matches:
                     dest_field = dest_field.strip()
-                    dest_is_mine = any(acc in dest_field for acc in self.my_accounts)
+                    # Case-insensitive matching
+                    dest_is_mine = any(acc.lower() in dest_field.lower() for acc in self.my_accounts)
 
                     # If both from and destination belong to you, it's internal
                     if dest_is_mine:

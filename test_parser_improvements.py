@@ -112,6 +112,16 @@ test_messages = [
 في:25-10-26 02:29""",
         'expected': 'expense'
     },
+    {
+        'description': 'Wallet top-up - lowercase barq (should be EXCLUDED)',
+        'message': """شراء انترنت
+بطاقة:9206;مدى-ابل باي
+من:3057
+مبلغ:SAR 1000
+لدى:barq
+في:25-10-13 21:22""",
+        'expected': None
+    },
 ]
 
 print("\n📋 Running Tests:\n")
