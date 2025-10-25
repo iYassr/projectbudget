@@ -13,12 +13,31 @@ from expense_parser import ExpenseParser
 from database import ExpenseDatabase
 from categorizer import ExpenseCategorizer
 
+# Import configuration
+try:
+    from config import ALLOWED_SENDERS, ENABLE_SENDER_FILTER, DEBUG_SENDER_FILTER
+except ImportError:
+    # Default behavior if config.py doesn't exist
+    ALLOWED_SENDERS = []
+    ENABLE_SENDER_FILTER = False
+    DEBUG_SENDER_FILTER = False
+
 # Path to TXT export folder
 EXPORT_PATH = os.path.expanduser("~/messages_export")
 
 print("=" * 80)
 print("Extract Expenses from iMessage TXT Export")
 print("=" * 80)
+
+# Show sender filter configuration
+if ENABLE_SENDER_FILTER:
+    print(f"\n🔍 Sender Filter: ENABLED")
+    print(f"   Only processing messages from {len(ALLOWED_SENDERS)} allowed sender(s):")
+    for sender in ALLOWED_SENDERS:
+        print(f"   • {sender}")
+else:
+    print(f"\n🔍 Sender Filter: DISABLED (processing all senders)")
+    print(f"   💡 To enable filtering, edit config.py")
 
 if not os.path.exists(EXPORT_PATH):
     print(f"\n❌ Export folder not found at: {EXPORT_PATH}")
@@ -88,6 +107,14 @@ for txt_file in txt_files:
                 if sender == "Me":
                     i += 1
                     continue
+
+                # Check sender whitelist
+                if ENABLE_SENDER_FILTER:
+                    if sender not in ALLOWED_SENDERS:
+                        if DEBUG_SENDER_FILTER:
+                            print(f"  🚫 Skipping message from: {sender}")
+                        i += 1
+                        continue
 
                 # Collect message lines
                 i += 1
