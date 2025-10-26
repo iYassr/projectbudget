@@ -269,25 +269,353 @@ def main():
 
     st.markdown("---")
 
-    # Category trends (if enough data)
+    # Monthly comparison (if enough data)
     if (end_date - start_date).days > 30:
-        st.subheader("📉 Category Trends")
+        st.subheader("📊 Monthly Analysis")
 
-        df['month'] = pd.to_datetime(df['date']).dt.to_period('M').astype(str)
+        tab1, tab2, tab3 = st.tabs(["📈 Month-over-Month", "📉 Category Trends", "📅 Monthly Breakdown"])
 
-        if 'category' in df.columns:
-            monthly_category = df.groupby(['month', 'category'])['amount'].sum().reset_index()
+        with tab1:
+            # Month-over-month comparison
+            df['month'] = pd.to_datetime(df['date']).dt.to_period('M').astype(str)
+            monthly_totals = df.groupby('month')['amount'].sum().reset_index()
+            monthly_totals['month_date'] = pd.to_datetime(monthly_totals['month'])
+            monthly_totals = monthly_totals.sort_values('month_date')
 
-            fig_trends = px.line(
-                monthly_category,
-                x='month',
-                y='amount',
-                color='category',
-                title="Monthly Spending by Category",
+            # Calculate MoM change
+            monthly_totals['prev_month'] = monthly_totals['amount'].shift(1)
+            monthly_totals['change'] = monthly_totals['amount'] - monthly_totals['prev_month']
+            monthly_totals['change_pct'] = (monthly_totals['change'] / monthly_totals['prev_month'] * 100).round(1)
+
+            # Bar chart with MoM
+            fig_mom = go.Figure()
+
+            fig_mom.add_trace(go.Bar(
+                x=monthly_totals['month'],
+                y=monthly_totals['amount'],
+                name='Total Spending',
+                marker_color='lightblue',
+                text=monthly_totals['amount'].round(2),
+                textposition='outside'
+            ))
+
+            fig_mom.update_layout(
+                title="Monthly Spending Comparison",
+                xaxis_title="Month",
+                yaxis_title="Amount",
+                height=400,
+                showlegend=True
+            )
+
+            st.plotly_chart(fig_mom, use_container_width=True)
+
+            # Show change table
+            if len(monthly_totals) > 1:
+                st.subheader("Month-over-Month Changes")
+                mom_display = monthly_totals[['month', 'amount', 'change', 'change_pct']].copy()
+                mom_display.columns = ['Month', 'Total', 'Change', 'Change %']
+                mom_display = mom_display.dropna()
+
+                if 'currency' in df.columns:
+                    primary_currency = df['currency'].mode()[0] if len(df['currency'].mode()) > 0 else 'SAR'
+                    symbol = CURRENCY_SYMBOLS.get(primary_currency, primary_currency)
+                    if primary_currency == 'SAR':
+                        format_str = f'{symbol} {{:,.2f}}'
+                    else:
+                        format_str = f'{symbol}{{:,.2f}}'
+                else:
+                    format_str = '${:,.2f}'
+
+                st.dataframe(
+                    mom_display.style.format({
+                        'Total': format_str,
+                        'Change': format_str,
+                        'Change %': '{:.1f}%'
+                    }).applymap(
+                        lambda x: 'color: green' if isinstance(x, (int, float)) and x < 0 else ('color: red' if isinstance(x, (int, float)) and x > 0 else ''),
+                        subset=['Change', 'Change %']
+                    ),
+                    use_container_width=True
+                )
+
+        with tab2:
+            # Category trends over time
+            if 'category' in df.columns:
+                monthly_category = df.groupby(['month', 'category'])['amount'].sum().reset_index()
+
+                fig_trends = px.line(
+                    monthly_category,
+                    x='month',
+                    y='amount',
+                    color='category',
+                    title="Monthly Spending by Category",
+                    markers=True
+                )
+                fig_trends.update_layout(height=400)
+                st.plotly_chart(fig_trends, use_container_width=True)
+
+        with tab3:
+            # Detailed monthly breakdown
+            if 'category' in df.columns:
+                monthly_breakdown = df.groupby(['month', 'category'])['amount'].sum().unstack(fill_value=0)
+                monthly_breakdown['Total'] = monthly_breakdown.sum(axis=1)
+                monthly_breakdown = monthly_breakdown.sort_index(ascending=False)
+
+                if 'currency' in df.columns:
+                    primary_currency = df['currency'].mode()[0] if len(df['currency'].mode()) > 0 else 'SAR'
+                    symbol = CURRENCY_SYMBOLS.get(primary_currency, primary_currency)
+                    if primary_currency == 'SAR':
+                        format_str = f'{symbol} {{:,.2f}}'
+                    else:
+                        format_str = f'{symbol}{{:,.2f}}'
+                else:
+                    format_str = '${:,.2f}'
+
+                st.dataframe(
+                    monthly_breakdown.style.format(format_str).background_gradient(cmap='YlOrRd', axis=1),
+                    use_container_width=True
+                )
+
+    st.markdown("---")
+
+    # Time-based analytics
+    st.subheader("⏰ Spending Patterns")
+
+    tab1, tab2, tab3, tab4 = st.tabs(["📅 Day of Week", "🕐 Hour of Day", "🗓️ Heatmap", "💳 Payment Methods"])
+
+    with tab1:
+        # Day of week analysis
+        df['day_of_week'] = pd.to_datetime(df['date']).dt.day_name()
+        df['day_num'] = pd.to_datetime(df['date']).dt.dayofweek
+
+        day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+        dow_spending = df.groupby('day_of_week')['amount'].agg(['sum', 'count', 'mean']).reindex(day_order)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            fig_dow = px.bar(
+                x=dow_spending.index,
+                y=dow_spending['sum'],
+                title="Total Spending by Day of Week",
+                labels={'x': 'Day', 'y': 'Total Amount'}
+            )
+            fig_dow.update_layout(height=350, showlegend=False)
+            st.plotly_chart(fig_dow, use_container_width=True)
+
+        with col2:
+            fig_dow_count = px.bar(
+                x=dow_spending.index,
+                y=dow_spending['count'],
+                title="Transaction Count by Day of Week",
+                labels={'x': 'Day', 'y': 'Number of Transactions'},
+                color=dow_spending['count'],
+                color_continuous_scale='Viridis'
+            )
+            fig_dow_count.update_layout(height=350, showlegend=False)
+            st.plotly_chart(fig_dow_count, use_container_width=True)
+
+    with tab2:
+        # Hour of day analysis
+        df['hour'] = pd.to_datetime(df['date']).dt.hour
+        hourly_spending = df.groupby('hour')['amount'].agg(['sum', 'count', 'mean'])
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            fig_hour = px.line(
+                x=hourly_spending.index,
+                y=hourly_spending['sum'],
+                title="Spending by Hour of Day",
+                labels={'x': 'Hour (24h)', 'y': 'Total Amount'},
                 markers=True
             )
-            fig_trends.update_layout(height=400)
-            st.plotly_chart(fig_trends, use_container_width=True)
+            fig_hour.update_layout(height=350)
+            st.plotly_chart(fig_hour, use_container_width=True)
+
+        with col2:
+            fig_hour_count = px.bar(
+                x=hourly_spending.index,
+                y=hourly_spending['count'],
+                title="Transaction Count by Hour",
+                labels={'x': 'Hour (24h)', 'y': 'Number of Transactions'}
+            )
+            fig_hour_count.update_layout(height=350, showlegend=False)
+            st.plotly_chart(fig_hour_count, use_container_width=True)
+
+    with tab3:
+        # Spending heatmap (day of week vs week number)
+        df_copy = df.copy()
+        df_copy['week'] = pd.to_datetime(df_copy['date']).dt.isocalendar().week
+        df_copy['year'] = pd.to_datetime(df_copy['date']).dt.year
+        df_copy['year_week'] = df_copy['year'].astype(str) + '-W' + df_copy['week'].astype(str).str.zfill(2)
+
+        heatmap_data = df_copy.groupby(['year_week', 'day_of_week'])['amount'].sum().unstack(fill_value=0)
+        heatmap_data = heatmap_data.reindex(columns=day_order, fill_value=0)
+
+        # Limit to last 12 weeks for readability
+        if len(heatmap_data) > 12:
+            heatmap_data = heatmap_data.tail(12)
+
+        fig_heatmap = px.imshow(
+            heatmap_data.T,
+            labels=dict(x="Week", y="Day of Week", color="Amount"),
+            title="Spending Heatmap (Last 12 Weeks)",
+            aspect="auto",
+            color_continuous_scale='YlOrRd'
+        )
+        fig_heatmap.update_layout(height=400)
+        st.plotly_chart(fig_heatmap, use_container_width=True)
+
+    with tab4:
+        # Sender/payment method analysis
+        if 'sender' in df.columns and df['sender'].notna().any():
+            sender_stats = df.groupby('sender').agg({
+                'amount': ['sum', 'count', 'mean']
+            }).round(2)
+            sender_stats.columns = ['Total Spent', 'Transactions', 'Avg Transaction']
+            sender_stats = sender_stats.sort_values('Total Spent', ascending=False)
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if 'currency' in df.columns:
+                    primary_currency = df['currency'].mode()[0] if len(df['currency'].mode()) > 0 else 'SAR'
+                    symbol = CURRENCY_SYMBOLS.get(primary_currency, primary_currency)
+                    if primary_currency == 'SAR':
+                        format_str = f'{symbol} {{:,.2f}}'
+                    else:
+                        format_str = f'{symbol}{{:,.2f}}'
+                else:
+                    format_str = '${:,.2f}'
+
+                st.dataframe(
+                    sender_stats.style.format({
+                        'Total Spent': format_str,
+                        'Avg Transaction': format_str
+                    }),
+                    use_container_width=True
+                )
+
+            with col2:
+                fig_sender = px.pie(
+                    values=sender_stats['Total Spent'],
+                    names=sender_stats.index,
+                    title="Spending by Payment Method",
+                    hole=0.4
+                )
+                fig_sender.update_layout(height=400)
+                st.plotly_chart(fig_sender, use_container_width=True)
+        else:
+            st.info("No payment method information available in the data.")
+
+    st.markdown("---")
+
+    # Currency breakdown (if multiple currencies)
+    if 'currency' in df.columns and len(df['currency'].unique()) > 1:
+        st.subheader("💱 Currency Breakdown")
+
+        col1, col2, col3 = st.columns(3)
+
+        currency_stats = df.groupby('currency').agg({
+            'amount': ['sum', 'count', 'mean']
+        }).round(2)
+        currency_stats.columns = ['Total', 'Count', 'Average']
+
+        with col1:
+            fig_currency = px.pie(
+                values=currency_stats['Total'],
+                names=currency_stats.index,
+                title="Spending by Currency",
+                hole=0.4
+            )
+            fig_currency.update_layout(height=300)
+            st.plotly_chart(fig_currency, use_container_width=True)
+
+        with col2:
+            # Currency breakdown table
+            st.markdown("### Currency Summary")
+            currency_display = currency_stats.copy()
+            st.dataframe(currency_display, use_container_width=True)
+
+        with col3:
+            # Transaction count by currency
+            fig_currency_count = px.bar(
+                x=currency_stats.index,
+                y=currency_stats['Count'],
+                title="Transactions by Currency",
+                labels={'x': 'Currency', 'y': 'Transaction Count'}
+            )
+            fig_currency_count.update_layout(height=300, showlegend=False)
+            st.plotly_chart(fig_currency_count, use_container_width=True)
+
+        st.markdown("---")
+
+    # Merchant analysis
+    st.subheader("🏪 Merchant Insights")
+
+    tab1, tab2, tab3 = st.tabs(["📊 Top Merchants", "🔄 Frequency", "📈 Spending Trends"])
+
+    with tab1:
+        merchant_stats = df.groupby('merchant').agg({
+            'amount': ['sum', 'count', 'mean', 'min', 'max']
+        }).round(2)
+        merchant_stats.columns = ['Total', 'Count', 'Average', 'Min', 'Max']
+        merchant_stats = merchant_stats.sort_values('Total', ascending=False).head(20)
+
+        if 'currency' in df.columns:
+            primary_currency = df['currency'].mode()[0] if len(df['currency'].mode()) > 0 else 'SAR'
+            symbol = CURRENCY_SYMBOLS.get(primary_currency, primary_currency)
+            if primary_currency == 'SAR':
+                format_str = f'{symbol} {{:,.2f}}'
+            else:
+                format_str = f'{symbol}{{:,.2f}}'
+        else:
+            format_str = '${:,.2f}'
+
+        st.dataframe(
+            merchant_stats.style.format({
+                'Total': format_str,
+                'Average': format_str,
+                'Min': format_str,
+                'Max': format_str
+            }).background_gradient(subset=['Total'], cmap='YlOrRd'),
+            use_container_width=True,
+            height=400
+        )
+
+    with tab2:
+        # Merchant frequency (most visited)
+        merchant_freq = df['merchant'].value_counts().head(15)
+
+        fig_freq = px.bar(
+            x=merchant_freq.index,
+            y=merchant_freq.values,
+            title="Most Frequent Merchants (Top 15)",
+            labels={'x': 'Merchant', 'y': 'Number of Transactions'}
+        )
+        fig_freq.update_layout(height=400, showlegend=False, xaxis_tickangle=-45)
+        st.plotly_chart(fig_freq, use_container_width=True)
+
+    with tab3:
+        # Merchant spending over time (top 5 merchants)
+        top_merchants = df.groupby('merchant')['amount'].sum().nlargest(5).index
+
+        if 'month' not in df.columns:
+            df['month'] = pd.to_datetime(df['date']).dt.to_period('M').astype(str)
+
+        merchant_monthly = df[df['merchant'].isin(top_merchants)].groupby(['month', 'merchant'])['amount'].sum().reset_index()
+
+        fig_merchant_trend = px.line(
+            merchant_monthly,
+            x='month',
+            y='amount',
+            color='merchant',
+            title="Top 5 Merchants - Spending Trends",
+            markers=True
+        )
+        fig_merchant_trend.update_layout(height=400)
+        st.plotly_chart(fig_merchant_trend, use_container_width=True)
 
     st.markdown("---")
 
