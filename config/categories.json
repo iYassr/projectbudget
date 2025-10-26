@@ -1,27 +1,77 @@
 {
   "categories": [
-    "Food & Dining",
+    "Housing",
+    "Utilities",
     "Groceries",
+    "Food & Dining",
     "Transportation",
-    "Shopping",
-    "Bills & Utilities",
-    "Entertainment",
+    "Car",
     "Healthcare",
-    "Travel",
-    "Education",
-    "Personal Care",
     "Insurance",
-    "Investments",
-    "ATM/Cash Withdrawal",
-    "Transfer",
-    "Other"
+    "Shopping",
+    "Entertainment & Subscriptions",
+    "Personal Care",
+    "Wife",
+    "Education",
+    "Kids/Childcare",
+    "Pets",
+    "Travel",
+    "Sports & Fitness",
+    "Gifts",
+    "Charity",
+    "Zakat",
+    "Fees & Government",
+    "Financial Fees",
+    "Savings & Investments",
+    "Debt Payments",
+    "Miscellaneous",
+    "Transfer"
   ],
+  "subcategories": {
+    "Housing": ["Rent", "Mortgage", "Maintenance"],
+    "Utilities": ["Electricity", "Water", "Gas", "Internet", "Mobile"],
+    "Groceries": [],
+    "Food & Dining": ["Restaurants", "Delivery", "Coffee"],
+    "Transportation": ["Taxi", "Ride-hailing", "Public Transit"],
+    "Car": ["Fuel", "Parking", "Tolls", "Service", "Insurance"],
+    "Healthcare": ["Pharmacy", "Clinic", "Dental"],
+    "Insurance": ["Health-TopUp", "Home", "Travel", "Life"],
+    "Shopping": ["Clothing", "Electronics", "Home Goods"],
+    "Entertainment & Subscriptions": ["Streaming", "Gaming", "Apps"],
+    "Personal Care": ["Barber/Salon", "Grooming"],
+    "Wife": ["Allowance", "Shopping", "Personal Care", "Healthcare"],
+    "Education": ["Courses", "Books"],
+    "Kids/Childcare": [],
+    "Pets": ["Food", "Vet"],
+    "Travel": ["Flights", "Hotels", "Visas"],
+    "Sports & Fitness": [
+      "Padel Court Fees",
+      "Coaching/Clinics",
+      "Tournaments",
+      "Equipment (Racket, Balls, Grips)",
+      "Stringing",
+      "Apparel & Shoes",
+      "Gym Memberships",
+      "Recovery (Physio/Massage/Sauna)"
+    ],
+    "Gifts": ["Family", "Friends", "Occasions"],
+    "Charity": ["Sadaqah", "Other Charity"],
+    "Zakat": ["Zakat al-Mal", "Zakat al-Fitr"],
+    "Fees & Government": ["Traffic Fines", "Passports/Iqama"],
+    "Financial Fees": ["Bank Fees", "FX", "ATM"],
+    "Savings & Investments": ["Emergency Fund", "Brokerage", "Retirement"],
+    "Debt Payments": ["Loans", "Credit Card"],
+    "Miscellaneous": [],
+    "Transfer": []
+  },
   "merchant_keywords": {
-    "Food & Dining": [
-      "restaurant", "cafe", "coffee", "pizza", "burger", "food", "dining", "مطعم", "مقهى", "طعام",
-      "albaik", "kudu", "shawarma", "شاورما", "البيك", "كودو", "herfy", "هرفي",
-      "mcdonalds", "kfc", "burger king", "starbucks", "dunkin", "cinnabon",
-      "ubereats", "hungerstation", "jahez", "marsool", "طلبات", "مرسول"
+    "Housing": [
+      "rent", "ايجار", "mortgage", "maintenance", "صيانة", "عقار"
+    ],
+    "Utilities": [
+      "stc", "mobily", "موبايلي", "zain", "زين", "virgin",
+      "electric", "كهرباء", "sec", "water", "ماء", "مياه",
+      "internet", "انترنت", "phone", "هاتف", "bill", "فاتورة"
     ],
     "Groceries": [
       "grocery", "supermarket", "market", "بقالة", "سوبرماركت",
@@ -29,57 +79,99 @@
       "lulu", "لولو", "carrefour", "كارفور", "nesto", "نستو",
       "othaim", "العثيم", "farm", "fresh", "hyper"
     ],
+    "Food & Dining": [
+      "restaurant", "cafe", "coffee", "pizza", "burger", "food", "dining", "مطعم", "مقهى", "طعام",
+      "albaik", "kudu", "shawarma", "شاورما", "البيك", "كودو", "herfy", "هرفي",
+      "mcdonalds", "kfc", "burger king", "starbucks", "dunkin", "cinnabon",
+      "ubereats", "hungerstation", "jahez", "marsool", "طلبات", "مرسول", "delivery"
+    ],
     "Transportation": [
       "uber", "careem", "كريم", "taxi", "taksi", "تاكسي", "bolt",
+      "bus", "باص", "metro", "مترو", "public transport"
+    ],
+    "Car": [
       "gas", "fuel", "petrol", "benzene", "بنزين", "وقود", "محطة",
       "aramco", "ارامكو", "aldrees", "الدريس", "woqod",
-      "parking", "موقف", "salik", "toll", "سالك"
-    ],
-    "Shopping": [
-      "amazon", "noon", "نون", "shein", "شي ان", "aliexpress",
-      "jarir", "جرير", "extra", "اكسترا", "saco", "ساكو",
-      "centrepoint", "سنتربوينت", "h&m", "zara", "max", "home center",
-      "store", "shop", "retail", "mall", "متجر", "مول"
-    ],
-    "Bills & Utilities": [
-      "stc", "mobily", "موبايلي", "zain", "زين", "virgin",
-      "electric", "كهرباء", "sec", "water", "ماء", "مياه",
-      "internet", "انترنت", "phone", "هاتف", "bill", "فاتورة",
-      "subscription", "اشتراك", "netflix", "spotify", "shahid", "شاهد",
-      "osn", "jawwy", "جوي"
-    ],
-    "Entertainment": [
-      "movie", "cinema", "سينما", "vox", "muvi", "موفي",
-      "netflix", "spotify", "gaming", "العاب", "play station", "xbox",
-      "steam", "epic games", "itunes", "app store", "google play",
-      "entertainment", "ترفيه", "bowling", "بولينج"
+      "parking", "موقف", "salik", "toll", "سالك",
+      "car service", "صيانة سيارة", "car insurance", "تأمين سيارة"
     ],
     "Healthcare": [
       "pharmacy", "صيدلية", "nahdi", "النهدي", "dawa", "الدواء",
       "hospital", "مستشفى", "clinic", "عيادة", "medical", "طبي",
       "doctor", "طبيب", "dental", "اسنان", "health", "صحة",
-      "lab", "مختبر", "insurance", "تأمين صحي"
+      "lab", "مختبر"
+    ],
+    "Insurance": [
+      "insurance", "تأمين", "bupa", "تكافل", "takaful"
+    ],
+    "Shopping": [
+      "amazon", "noon", "نون", "shein", "شي ان", "aliexpress",
+      "jarir", "جرير", "extra", "اكسترا", "saco", "ساكو",
+      "centrepoint", "سنتربوينت", "h&m", "zara", "max", "home center",
+      "store", "shop", "retail", "mall", "متجر", "مول",
+      "clothing", "ملابس", "electronics", "الكترونيات"
+    ],
+    "Entertainment & Subscriptions": [
+      "movie", "cinema", "سينما", "vox", "muvi", "موفي",
+      "netflix", "spotify", "shahid", "شاهد", "osn", "jawwy", "جوي",
+      "gaming", "العاب", "play station", "xbox", "steam", "epic games",
+      "itunes", "app store", "google play", "subscription", "اشتراك",
+      "entertainment", "ترفيه", "bowling", "بولينج"
+    ],
+    "Personal Care": [
+      "salon", "صالون", "barber", "حلاق", "spa", "منتجع",
+      "beauty", "تجميل", "perfume", "عطر", "cosmetics", "مستحضرات",
+      "grooming", "العناية"
+    ],
+    "Wife": [],
+    "Education": [
+      "school", "مدرسة", "university", "جامعة", "college", "كلية",
+      "course", "دورة", "udemy", "coursera", "book", "كتاب",
+      "jarir bookstore", "مكتبة", "tuition", "رسوم دراسية"
+    ],
+    "Kids/Childcare": [
+      "childcare", "حضانة", "nursery", "toys", "العاب اطفال"
+    ],
+    "Pets": [
+      "pet", "حيوان اليف", "vet", "بيطري", "pet food"
     ],
     "Travel": [
       "hotel", "فندق", "booking", "agoda", "expedia", "trip",
       "airline", "طيران", "saudia", "السعودية", "flynas", "ناس",
       "flyadeal", "adeal", "qatar airways", "emirates",
       "flight", "رحلة", "travel", "سفر", "tourism", "سياحة",
-      "almosafer", "المسافر", "rehlat", "رحلات"
+      "almosafer", "المسافر", "rehlat", "رحلات", "visa", "تأشيرة"
     ],
-    "Education": [
-      "school", "مدرسة", "university", "جامعة", "college", "كلية",
-      "course", "دورة", "udemy", "coursera", "book", "كتاب",
-      "jarir bookstore", "مكتبة", "tuition", "رسوم دراسية"
+    "Sports & Fitness": [
+      "padel", "بادل", "tennis", "تنس", "gym", "نادي", "fitness", "لياقة",
+      "sports", "رياضة", "sport club", "نادي رياضي",
+      "coach", "مدرب", "tournament", "بطولة",
+      "physio", "علاج طبيعي", "massage", "تدليك", "sauna", "ساونا"
     ],
-    "Personal Care": [
-      "salon", "صالون", "barber", "حلاق", "spa", "منتجع",
-      "beauty", "تجميل", "perfume", "عطر", "cosmetics", "مستحضرات",
-      "gym", "نادي", "fitness", "لياقة", "sports club"
+    "Gifts": [
+      "gift", "هدية", "present", "flower", "ورد", "chocolate", "شوكولاتة"
     ],
-    "ATM/Cash Withdrawal": [
-      "atm", "صراف", "cash", "نقد", "withdrawal", "سحب"
+    "Charity": [
+      "charity", "صدقة", "sadaqah", "donation", "تبرع"
     ],
+    "Zakat": [
+      "zakat", "زكاة", "zakat al-mal", "زكاة المال", "zakat al-fitr", "زكاة الفطر"
+    ],
+    "Fees & Government": [
+      "fine", "غرامة", "traffic", "مرور", "passport", "جواز",
+      "iqama", "اقامة", "government", "حكومة", "absher", "ابشر"
+    ],
+    "Financial Fees": [
+      "bank fee", "رسوم بنك", "atm fee", "fx", "صرف", "exchange"
+    ],
+    "Savings & Investments": [
+      "investment", "استثمار", "savings", "مدخرات", "brokerage",
+      "stocks", "اسهم", "fund", "صندوق", "retirement", "تقاعد"
+    ],
+    "Debt Payments": [
+      "loan", "قرض", "credit card", "بطاقة ائتمان", "debt", "دين"
+    ],
+    "Miscellaneous": [],
     "Transfer": [
       "transfer", "حوالة", "تحويل", "sent to", "received from"
     ]
