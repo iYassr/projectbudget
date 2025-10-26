@@ -65,6 +65,16 @@ def main():
         ["All Time", "This Month", "Last Month", "Last 3 Months", "Last 6 Months", "Custom Range"]
     )
 
+    # Filters
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("🔍 Filters")
+
+    exclude_transfers = st.sidebar.checkbox(
+        "Exclude Transfers",
+        value=True,
+        help="Hide transactions marked as 'Transfer' to focus on actual expenses"
+    )
+
     if date_option == "All Time":
         # Get all expenses from database
         start_date = datetime(2020, 1, 1)  # Far back enough
@@ -97,8 +107,91 @@ def main():
         end_date=end_date.strftime("%Y-%m-%d")
     )
 
+    # Get available categories and currencies for filter options
+    all_categories = []
+    all_currencies = []
+    if not df.empty:
+        if 'category' in df.columns:
+            all_categories = sorted(df['category'].unique().tolist())
+        if 'currency' in df.columns:
+            all_currencies = sorted(df['currency'].unique().tolist())
+
+    # Category filter
+    if all_categories:
+        selected_categories = st.sidebar.multiselect(
+            "Filter Categories",
+            options=all_categories,
+            default=all_categories,
+            help="Select which categories to include in analysis"
+        )
+    else:
+        selected_categories = []
+
+    # Currency filter
+    if len(all_currencies) > 1:
+        selected_currencies = st.sidebar.multiselect(
+            "Filter Currencies",
+            options=all_currencies,
+            default=all_currencies,
+            help="Select which currencies to include"
+        )
+    else:
+        selected_currencies = all_currencies
+
+    # Amount range filter
+    if not df.empty:
+        min_amount = float(df['amount'].min())
+        max_amount = float(df['amount'].max())
+
+        amount_range = st.sidebar.slider(
+            "Amount Range",
+            min_value=min_amount,
+            max_value=max_amount,
+            value=(min_amount, max_amount),
+            help="Filter transactions by amount"
+        )
+    else:
+        amount_range = (0.0, 0.0)
+
+    # Apply filters
+    original_count = len(df)
+    filtered_reasons = []
+
+    if exclude_transfers and 'category' in df.columns:
+        before = len(df)
+        df = df[df['category'] != 'Transfer'].copy()
+        if len(df) < before:
+            filtered_reasons.append(f"{before - len(df):,} transfers")
+
+    if selected_categories and 'category' in df.columns:
+        before = len(df)
+        df = df[df['category'].isin(selected_categories)].copy()
+        excluded_cats = len(all_categories) - len(selected_categories)
+        if excluded_cats > 0:
+            filtered_reasons.append(f"{excluded_cats} categories")
+
+    if selected_currencies and 'currency' in df.columns:
+        before = len(df)
+        df = df[df['currency'].isin(selected_currencies)].copy()
+        excluded_curr = len(all_currencies) - len(selected_currencies)
+        if excluded_curr > 0:
+            filtered_reasons.append(f"{excluded_curr} currencies")
+
+    if amount_range and not df.empty:
+        before = len(df)
+        df = df[(df['amount'] >= amount_range[0]) & (df['amount'] <= amount_range[1])].copy()
+        if len(df) < before:
+            filtered_reasons.append(f"amount range")
+
+    filtered_count = len(df)
+
     # Main content
     st.title("📊 Expense Dashboard")
+
+    # Show filter info if any filters were applied
+    if filtered_reasons:
+        filter_text = ", ".join(filtered_reasons)
+        st.info(f"ℹ️ Active filters: {filter_text}. Showing {filtered_count:,} of {original_count:,} transactions.")
 
     if df.empty:
         st.warning("No expenses found for the selected period. Please add some expenses first!")
