@@ -129,6 +129,11 @@ class ExpenseCategorizer:
         # Try rule-based categorization
         rule_category = self._categorize_by_rules(merchant, raw_message)
         if rule_category:
+            # Cache rule-based result to avoid future lookups
+            if merchant_key not in self.merchant_cache:
+                self.merchant_cache[merchant_key] = rule_category
+                self._save_cache()
+
             return {
                 'category': rule_category,
                 'confidence': 0.8,
