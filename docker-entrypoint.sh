@@ -35,7 +35,7 @@ case "$1" in
         echo -e "${GREEN}Running expense extraction...${NC}"
         if [ -z "$2" ]; then
             echo -e "${RED}Error: Please provide input file path${NC}"
-            echo "Usage: docker-compose run dashboard extract /path/to/messages.txt"
+            echo "Usage: docker compose run dashboard extract /path/to/messages.txt"
             exit 1
         fi
         exec python3 extract_from_txt_export.py "$2"
@@ -112,16 +112,16 @@ case "$1" in
         echo "  help              - Show this help message"
         echo ""
         echo "Examples:"
-        echo "  docker-compose up dashboard"
-        echo "  docker-compose run dashboard extract /data/messages.txt"
-        echo "  docker-compose run dashboard recategorize --apply"
-        echo "  docker-compose run dashboard backup"
-        echo "  docker-compose run dashboard bash"
+        echo "  docker compose up dashboard"
+        echo "  docker compose run dashboard extract /data/messages.txt"
+        echo "  docker compose run dashboard recategorize --apply"
+        echo "  docker compose run dashboard backup"
+        echo "  docker compose run dashboard bash"
         ;;
 
     *)
         echo -e "${YELLOW}Unknown command: $1${NC}"
-        echo "Run 'docker-compose run dashboard help' for available commands"
+        echo "Run 'docker compose run dashboard help' for available commands"
         echo -e "${YELLOW}Starting dashboard by default...${NC}"
         exec streamlit run src/dashboard.py \
             --server.port=8501 \

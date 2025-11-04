@@ -23,10 +23,10 @@ nano .env
 
 ```bash
 # Build and start
-docker-compose up dashboard
+docker compose up dashboard
 
 # Or run in background
-docker-compose up -d dashboard
+docker compose up -d dashboard
 ```
 
 Dashboard will be available at: **http://localhost:8501**
@@ -38,43 +38,43 @@ Dashboard will be available at: **http://localhost:8501**
 ### Dashboard
 ```bash
 # Start dashboard
-docker-compose up dashboard
+docker compose up dashboard
 
 # Start in background (detached)
-docker-compose up -d dashboard
+docker compose up -d dashboard
 
 # View logs
-docker-compose logs -f dashboard
+docker compose logs -f dashboard
 
 # Stop
-docker-compose down
+docker compose down
 ```
 
 ### Extract Expenses from TXT File
 ```bash
 # Extract from messages.txt
-docker-compose run --rm dashboard extract /app/data/messages.txt
+docker compose run --rm dashboard extract /app/data/messages.txt
 
 # With volume mount
-docker-compose run --rm -v $(pwd)/messages.txt:/app/messages.txt dashboard extract /app/messages.txt
+docker compose run --rm -v $(pwd)/messages.txt:/app/messages.txt dashboard extract /app/messages.txt
 ```
 
 ### Recategorize Expenses
 ```bash
 # Dry run (preview changes)
-docker-compose run --rm dashboard recategorize
+docker compose run --rm dashboard recategorize
 
 # Apply changes
-docker-compose run --rm dashboard recategorize --apply
+docker compose run --rm dashboard recategorize --apply
 
 # With AI
-docker-compose run --rm dashboard recategorize --use-ai --apply
+docker compose run --rm dashboard recategorize --use-ai --apply
 ```
 
 ### Backup Database
 ```bash
 # Create backup
-docker-compose run --rm dashboard backup
+docker compose run --rm dashboard backup
 
 # Backups are stored in ./backups/
 ```
@@ -82,15 +82,15 @@ docker-compose run --rm dashboard backup
 ### Interactive Shell
 ```bash
 # Bash shell
-docker-compose run --rm dashboard bash
+docker compose run --rm dashboard bash
 
 # Python shell
-docker-compose run --rm dashboard python
+docker compose run --rm dashboard python
 ```
 
 ### Run Tests
 ```bash
-docker-compose run --rm dashboard test
+docker compose run --rm dashboard test
 ```
 
 ---
@@ -127,7 +127,7 @@ Docker Compose automatically mounts:
 ### Run with Scheduler (Automatic Monthly Processing)
 
 ```bash
-docker-compose --profile with-scheduler up -d
+docker compose --profile with-scheduler up -d
 ```
 
 This starts:
@@ -158,7 +158,7 @@ ports:
 Or override via command line:
 
 ```bash
-docker-compose run --rm -p 8080:8501 dashboard
+docker compose run --rm -p 8080:8501 dashboard
 ```
 
 ---
@@ -200,7 +200,7 @@ networks:
 
 Start production:
 ```bash
-docker-compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ### Behind Nginx Reverse Proxy
@@ -243,13 +243,13 @@ sudo certbot --nginx -d expenses.yourdomain.com
 ### View Logs
 ```bash
 # Real-time logs
-docker-compose logs -f dashboard
+docker compose logs -f dashboard
 
 # Last 100 lines
-docker-compose logs --tail=100 dashboard
+docker compose logs --tail=100 dashboard
 
 # Since specific time
-docker-compose logs --since 2025-01-01T00:00:00 dashboard
+docker compose logs --since 2025-01-01T00:00:00 dashboard
 ```
 
 ### Update Application
@@ -258,7 +258,7 @@ docker-compose logs --since 2025-01-01T00:00:00 dashboard
 git pull
 
 # Rebuild and restart
-docker-compose up -d --build dashboard
+docker compose up -d --build dashboard
 ```
 
 ### Database Backup & Restore
@@ -266,10 +266,10 @@ docker-compose up -d --build dashboard
 **Backup:**
 ```bash
 # Manual backup
-docker-compose run --rm dashboard backup
+docker compose run --rm dashboard backup
 
 # Scheduled backup (cron)
-0 2 * * * cd /path/to/projectbudget && docker-compose run --rm dashboard backup
+0 2 * * * cd /path/to/projectbudget && docker compose run --rm dashboard backup
 ```
 
 **Restore:**
@@ -278,16 +278,16 @@ docker-compose run --rm dashboard backup
 cp backups/expenses_backup_20250101_090000.db data/expenses.db
 
 # Restart container
-docker-compose restart dashboard
+docker compose restart dashboard
 ```
 
 ### Clean Up
 ```bash
 # Stop all containers
-docker-compose down
+docker compose down
 
 # Stop and remove volumes
-docker-compose down -v
+docker compose down -v
 
 # Remove unused images
 docker image prune -a
@@ -303,25 +303,25 @@ docker system prune -a --volumes
 ### Container won't start
 ```bash
 # Check logs
-docker-compose logs dashboard
+docker compose logs dashboard
 
 # Check if port is already in use
 lsof -i :8501
 
 # Try different port
-docker-compose run --rm -p 8502:8501 dashboard
+docker compose run --rm -p 8502:8501 dashboard
 ```
 
 ### Database locked error
 ```bash
 # Stop all containers
-docker-compose down
+docker compose down
 
 # Remove lock
 rm data/*.db-journal data/*.db-shm data/*.db-wal
 
 # Restart
-docker-compose up dashboard
+docker compose up dashboard
 ```
 
 ### Permission denied errors
@@ -330,16 +330,16 @@ docker-compose up dashboard
 sudo chown -R $USER:$USER data/ reports/ logs/
 
 # Or run with sudo (not recommended)
-sudo docker-compose up dashboard
+sudo docker compose up dashboard
 ```
 
 ### Cannot connect to dashboard
 ```bash
 # Check if container is running
-docker-compose ps
+docker compose ps
 
 # Check container network
-docker-compose exec dashboard curl http://localhost:8501/_stcore/health
+docker compose exec dashboard curl http://localhost:8501/_stcore/health
 
 # Check host firewall
 sudo ufw allow 8501
@@ -456,7 +456,7 @@ doctl compute droplet create expense-tracker --image docker-20-04 --size s-1vcpu
 ssh root@<droplet-ip>
 git clone <your-repo>
 cd projectbudget
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Deploy to Google Cloud Run
@@ -478,7 +478,7 @@ gcloud run deploy expense-tracker \
 
 1. **Development mode with hot reload:**
    ```bash
-   docker-compose up dashboard
+   docker compose up dashboard
    # Streamlit auto-reloads on file changes
    ```
 
@@ -494,12 +494,12 @@ gcloud run deploy expense-tracker \
 
 4. **Run one-off commands:**
    ```bash
-   docker-compose run --rm dashboard python -c "print('Hello')"
+   docker compose run --rm dashboard python -c "print('Hello')"
    ```
 
 5. **Check container health:**
    ```bash
-   docker-compose exec dashboard curl http://localhost:8501/_stcore/health
+   docker compose exec dashboard curl http://localhost:8501/_stcore/health
    ```
 
 ---
@@ -521,14 +521,14 @@ When adding new features that require Docker changes:
 2. Update docker-compose.yml if new services needed
 3. Update docker-entrypoint.sh if new commands needed
 4. Update this DOCKER.md documentation
-5. Test changes with `docker-compose up --build`
+5. Test changes with `docker compose up --build`
 
 ---
 
 ## 📞 Support
 
 If you encounter issues:
-1. Check logs: `docker-compose logs dashboard`
+1. Check logs: `docker compose logs dashboard`
 2. Review troubleshooting section above
 3. Open an issue on GitHub with:
    - Docker version: `docker --version`

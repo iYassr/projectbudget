@@ -28,7 +28,7 @@ cd projectbudget
 cp .env.example .env
 
 # 3. Start dashboard
-docker-compose up dashboard
+docker compose up dashboard
 ```
 
 Dashboard available at **http://localhost:8501**
@@ -121,19 +121,19 @@ projectbudget/
 ### Docker Commands
 ```bash
 # Start dashboard
-docker-compose up dashboard
+docker compose up dashboard
 
 # Extract expenses from TXT
-docker-compose run --rm dashboard extract /app/data/messages.txt
+docker compose run --rm dashboard extract /app/data/messages.txt
 
 # Recategorize with AI
-docker-compose run --rm dashboard recategorize --use-ai --apply
+docker compose run --rm dashboard recategorize --use-ai --apply
 
 # Backup database
-docker-compose run --rm dashboard backup
+docker compose run --rm dashboard backup
 
 # Interactive shell
-docker-compose run --rm dashboard bash
+docker compose run --rm dashboard bash
 ```
 
 ### Traditional Commands
@@ -157,7 +157,7 @@ Contributions welcome! Please:
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test with Docker: `docker-compose up --build`
+4. Test with Docker: `docker compose up --build`
 5. Submit a pull request
 
 ## 📄 License
