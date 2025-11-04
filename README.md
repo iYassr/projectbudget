@@ -4,14 +4,40 @@ A Python-based system to extract, analyze, and visualize expenses from iPhone SM
 
 ## Features
 
-- Extract expense data from iPhone Messages database on Mac
-- Automatic parsing of bank/payment SMS messages
-- AI-powered expense categorization
-- Interactive dashboard with visualizations
-- Export to Excel, CSV, and Google Sheets
-- Monthly automated reports
+- 🏦 Extract expense data from iPhone Messages database or TXT exports
+- 🤖 AI-powered expense categorization (OpenAI/Anthropic)
+- 📊 Interactive Streamlit dashboard with 25+ visualizations
+- 💰 Multi-currency support (SAR, USD, EUR, GBP, INR)
+- 🇸🇦 Saudi-specific categories (Zakat, Charity, Padel, etc.)
+- 📱 Smart SMS parsing with Arabic support
+- 🐳 **Docker support for easy deployment**
+- 🎯 Budget tracking and spending insights
+- 📤 Export to Excel, CSV, and Google Sheets
+- 🔄 Automated monthly reports
 
-## Setup
+## Quick Start (Docker) 🐳
+
+**Fastest way to get started:**
+
+```bash
+# 1. Clone repository
+git clone <your-repo>
+cd projectbudget
+
+# 2. Copy environment file
+cp .env.example .env
+
+# 3. Start dashboard
+docker-compose up dashboard
+```
+
+Dashboard available at **http://localhost:8501**
+
+See [DOCKER.md](DOCKER.md) for complete Docker documentation.
+
+---
+
+## Setup (Traditional)
 
 1. Install dependencies:
 ```bash
@@ -61,5 +87,85 @@ projectbudget/
 │   └── expenses.db           # SQLite database
 ├── config/
 │   └── categories.json       # Expense categories configuration
-└── reports/                  # Generated reports
+├── reports/                  # Generated reports
+├── Dockerfile                # Docker image configuration
+├── docker-compose.yml        # Docker orchestration
+└── docker-entrypoint.sh      # Docker startup script
 ```
+
+## 📚 Documentation
+
+- **[DOCKER.md](DOCKER.md)** - Complete Docker setup and deployment guide
+- **[USAGE.md](USAGE.md)** - Detailed usage instructions
+- **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide
+- **[RECATEGORIZATION_GUIDE.md](RECATEGORIZATION_GUIDE.md)** - Guide to categorizing merchants
+- **[DASHBOARD_FEATURES.md](DASHBOARD_FEATURES.md)** - Dashboard features overview
+- **[SENDER_FILTERING.md](SENDER_FILTERING.md)** - SMS sender filtering guide
+
+## 🐳 Docker vs Traditional Setup
+
+| Feature | Docker | Traditional |
+|---------|--------|------------|
+| **Setup Time** | 2 minutes | 10-15 minutes |
+| **Dependencies** | Auto-installed | Manual pip install |
+| **Portability** | ✅ Works anywhere | ❌ Python env required |
+| **Isolation** | ✅ Containerized | ❌ System-wide |
+| **Updates** | Easy rebuild | Manual dependency updates |
+| **Production Ready** | ✅ Yes | Requires extra config |
+| **Development** | ✅ Hot reload | ✅ Direct access |
+
+**Recommendation:** Use Docker for deployment, Traditional for development.
+
+## 🚀 Common Tasks
+
+### Docker Commands
+```bash
+# Start dashboard
+docker-compose up dashboard
+
+# Extract expenses from TXT
+docker-compose run --rm dashboard extract /app/data/messages.txt
+
+# Recategorize with AI
+docker-compose run --rm dashboard recategorize --use-ai --apply
+
+# Backup database
+docker-compose run --rm dashboard backup
+
+# Interactive shell
+docker-compose run --rm dashboard bash
+```
+
+### Traditional Commands
+```bash
+# Start dashboard
+streamlit run src/dashboard.py
+
+# Extract from TXT export
+python extract_from_txt_export.py messages.txt
+
+# Recategorize
+python recategorize_others.py --apply
+
+# Run tests
+python -m pytest tests/
+```
+
+## 🤝 Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with Docker: `docker-compose up --build`
+5. Submit a pull request
+
+## 📄 License
+
+MIT License - see LICENSE file for details
+
+## 🙏 Acknowledgments
+
+- Built with Streamlit, Plotly, and SQLite
+- AI categorization powered by OpenAI and Anthropic
+- Saudi-specific features for local market needs

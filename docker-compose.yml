@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # Main expense tracker application with dashboard
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: expense-tracker-dashboard
+    ports:
+      - "8501:8501"  # Streamlit dashboard
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+      - ./logs:/app/logs
+      - ./merchant_cache.json:/app/merchant_cache.json
+      - ./config:/app/config
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: dashboard
+    networks:
+      - expense-tracker-network
+
+  # Optional: Separate service for scheduled jobs
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: expense-tracker-scheduler
+    volumes:
+      - ./data:/app/data
+      - ./reports:/app/reports
+      - ./logs:/app/logs
+      - ./merchant_cache.json:/app/merchant_cache.json
+      - ./config:/app/config
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    restart: unless-stopped
+    command: scheduler
+    networks:
+      - expense-tracker-network
+    profiles:
+      - with-scheduler  # Only starts if explicitly requested
+
+  # Optional: Database backup service
+  backup:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: expense-tracker-backup
+    volumes:
+      - ./data:/app/data
+      - ./backups:/app/backups
+    environment:
+      - PYTHONUNBUFFERED=1
+    env_file:
+      - .env
+    command: backup
+    networks:
+      - expense-tracker-network
+    profiles:
+      - backup  # Only runs when explicitly requested
+
+networks:
+  expense-tracker-network:
+    driver: bridge
+
+volumes:
+  data:
+  reports:
+  logs:
