@@ -54,3 +54,6 @@ Thumbs.db
 # Credentials
 credentials.json
 *_credentials.json
+
+# Dokploy deployment
+.dokploy-env

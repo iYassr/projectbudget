@@ -10,19 +10,30 @@ services:
     ports:
       - "8501:8501"  # Streamlit dashboard
     volumes:
-      - ./data:/app/data
-      - ./reports:/app/reports
-      - ./logs:/app/logs
-      - ./merchant_cache.json:/app/merchant_cache.json
-      - ./config:/app/config
+      - ../files/data:/app/data
+      - ../files/reports:/app/reports
+      - ../files/logs:/app/logs
+      - ../files/merchant_cache.json:/app/merchant_cache.json
+      - ../files/config:/app/config
     environment:
       - PYTHONUNBUFFERED=1
     env_file:
       - .env
     restart: unless-stopped
     command: dashboard
+    labels:
+      # Traefik labels for Dokploy reverse proxy
+      - "traefik.enable=true"
+      - "traefik.http.routers.expense-tracker.rule=Host(`expense-tracker.${DOMAIN}`)"
+      - "traefik.http.routers.expense-tracker.entrypoints=websecure"
+      - "traefik.http.routers.expense-tracker.tls.certresolver=letsencrypt"
+      - "traefik.http.services.expense-tracker.loadbalancer.server.port=8501"
+      # WebSocket support for Streamlit
+      - "traefik.http.routers.expense-tracker.middlewares=streamlit-headers"
+      - "traefik.http.middlewares.streamlit-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
     networks:
       - expense-tracker-network
+      - dokploy-network
 
   # Optional: Separate service for scheduled jobs
   scheduler:
@@ -31,11 +42,11 @@ services:
       dockerfile: Dockerfile
     container_name: expense-tracker-scheduler
     volumes:
-      - ./data:/app/data
-      - ./reports:/app/reports
-      - ./logs:/app/logs
-      - ./merchant_cache.json:/app/merchant_cache.json
-      - ./config:/app/config
+      - ../files/data:/app/data
+      - ../files/reports:/app/reports
+      - ../files/logs:/app/logs
+      - ../files/merchant_cache.json:/app/merchant_cache.json
+      - ../files/config:/app/config
     environment:
       - PYTHONUNBUFFERED=1
     env_file:
@@ -44,6 +55,7 @@ services:
     command: scheduler
     networks:
       - expense-tracker-network
+      - dokploy-network
     profiles:
       - with-scheduler  # Only starts if explicitly requested
 
@@ -54,8 +66,8 @@ services:
       dockerfile: Dockerfile
     container_name: expense-tracker-backup
     volumes:
-      - ./data:/app/data
-      - ./backups:/app/backups
+      - ../files/data:/app/data
+      - ../files/backups:/app/backups
     environment:
       - PYTHONUNBUFFERED=1
     env_file:
@@ -63,12 +75,15 @@ services:
     command: backup
     networks:
       - expense-tracker-network
+      - dokploy-network
     profiles:
       - backup  # Only runs when explicitly requested
 
 networks:
   expense-tracker-network:
     driver: bridge
+  dokploy-network:
+    external: true
 
 volumes:
   data:

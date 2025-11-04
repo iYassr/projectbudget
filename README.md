@@ -10,7 +10,8 @@ A Python-based system to extract, analyze, and visualize expenses from iPhone SM
 - 💰 Multi-currency support (SAR, USD, EUR, GBP, INR)
 - 🇸🇦 Saudi-specific categories (Zakat, Charity, Padel, etc.)
 - 📱 Smart SMS parsing with Arabic support
-- 🐳 **Docker support for easy deployment**
+- 🐳 **Docker & Dokploy support for easy deployment**
+- 🚀 **One-click deployment to Dokploy**
 - 🎯 Budget tracking and spending insights
 - 📤 Export to Excel, CSV, and Google Sheets
 - 🔄 Automated monthly reports
@@ -34,6 +35,22 @@ docker compose up dashboard
 Dashboard available at **http://localhost:8501**
 
 See [DOCKER.md](DOCKER.md) for complete Docker documentation.
+
+## Dokploy Deployment 🚀
+
+**Deploy to your Dokploy instance:**
+
+```bash
+# Set your Dokploy credentials
+export DOKPLOY_URL="https://your-dokploy-instance.com"
+export DOKPLOY_API_KEY="your-api-key"
+export PROJECT_ID="your-project-id"
+
+# Run deployment script
+./deploy-to-dokploy.sh
+```
+
+Or deploy via Dokploy Web UI - see [DOKPLOY.md](DOKPLOY.md) for complete guide.
 
 ---
 
@@ -96,6 +113,7 @@ projectbudget/
 ## 📚 Documentation
 
 - **[DOCKER.md](DOCKER.md)** - Complete Docker setup and deployment guide
+- **[DOKPLOY.md](DOKPLOY.md)** - Deploy to Dokploy (self-hosted PaaS)
 - **[USAGE.md](USAGE.md)** - Detailed usage instructions
 - **[QUICKSTART.md](QUICKSTART.md)** - Quick start guide
 - **[RECATEGORIZATION_GUIDE.md](RECATEGORIZATION_GUIDE.md)** - Guide to categorizing merchants
